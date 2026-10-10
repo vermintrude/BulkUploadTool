@@ -37,3 +37,5 @@ Isolated Chromium; mocked AI and telemetry; no billable requests or store writes
 - Admin pricing and threshold persist in isolated browser storage
 
 PowerShell report tests passed: read-only setup/report queries; all pages; incomplete markers; zero-match summary; unconfigured state; GraphQL and network failures; invalid summary; cursor stall; duplicate-ID rejection; full source parsing. Actual HTTP routes and native request/settings parsing were exercised with synthetic authentication/Shopify transport. No live Shopify/Flow API validation, Windows test or paid OpenAI request. Previous batch/planner cloud and owner Windows tests remain evidence for the unchanged inherited processing.
+
+Sol test: two AI model identifiers changed to gpt-6.1-sol; all other app files unchanged against shopify-actions-test. Browser resume/accounting regression checks passed (8). Mock telemetry and PowerShell parsing passed. No paid API requests or actual model accuracy validation.

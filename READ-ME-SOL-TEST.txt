@@ -1,0 +1,10 @@
+ComicRox Sol AI test build
+
+Both Standard AI passes now use gpt-6.1-sol. Prompts, image detail, token limits, issue verification, resume/checkpoint, planner and Shopify workflows are unchanged.
+
+Finish/export your current batch first. Back up AI checkpoint and API usage through Admin. Stop the old server before starting this separate copy with START-COMICROX-TOOL.bat. Keep port 18789 and the same browser to preserve browser state. Do not overwrite your old app folder.
+Copy ComicRox-API-Usage.ndjson privately from your old app folder into this one while both servers are stopped if you want the existing usage history. Do not share that file publicly.
+
+After a Sol request, select its returned model in Admin and set its exact rates. For gpt-6.1-sol the owner-supplied rates are input 2, cached input 0.10, output 10 USD per million tokens. The Admin model selector changes accounting only, not the processing model. Keep Astra rates for older history.
+
+Test a few known comics and check title, issue, edition/year and variant before relying on it. Cloud checks use mock API responses, not paid calls; real API compatibility and cover accuracy await the first Windows trial. If it fails, stop this server and launch the preserved old copy; do not retry repeatedly.

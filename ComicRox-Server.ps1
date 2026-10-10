@@ -405,7 +405,7 @@ CRITICAL ISSUE-NUMBER CHECK:
 Never estimate grade, condition, price or quantity. If uncertain, leave fields blank rather than guessing.
 '@
       $payload=@{
-        model='gpt-6-astra'
+        model='gpt-6.1-sol'
         messages=@(@{role='user';content=@(@{type='text';text=$prompt}) + $imageParts})
         response_format=@{type='json_object'}
         max_completion_tokens=900
@@ -437,7 +437,7 @@ confidence must be high, medium, or low.
 Use high confidence ONLY when every digit is visibly readable. If any leading or trailing digit is ambiguous, return an empty issue_number and low confidence rather than guessing.
 "@
       $verifyPayload=@{
-        model='gpt-6-astra'
+        model='gpt-6.1-sol'
         messages=@(@{role='user';content=@(@{type='text';text=$verifyPrompt}) + $imageParts})
         response_format=@{type='json_object'}
         max_completion_tokens=250
