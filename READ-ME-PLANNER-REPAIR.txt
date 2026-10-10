@@ -1,3 +1,5 @@
+HISTORICAL PLANNER NOTES: This Admin build also adds authorised Standard AI resume/usage recording. Read READ-ME-ADMIN-TEST.txt first.
+
 ComicRox Delivery Planner repair - ISOLATED TEST - 10 October 2026
 
 Keep the working Live folder unchanged. Extract this ZIP into a NEW folder,

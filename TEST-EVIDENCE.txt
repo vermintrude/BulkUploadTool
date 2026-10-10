@@ -1,4 +1,15 @@
-Cloud verification saved 10 October 2026
+Admin/AI resume isolated cloud tests — 10 October 2026
+
+admin-resume-results.json
+Isolated Chromium; mocked AI and telemetry; no billable requests or store writes
+- Concurrent retry and restore blocked during processing
+- Timeout stops clearly; first two results and edited review fields are checkpointed
+- Resume requests only unfinished comics; completed reviewed title/description/price retained
+- Review JSON backup and explicit reload restoration retain all records and completion markers
+- Legacy recovery recognises prior AI results; changed photograph invalidates a completion marker
+- Invalid recovery backup rejected without changing current review
+- Admin separates unknown costs, prices cached tokens correctly, estimates two-pass batch cost and displays daily warning
+- Admin pricing and threshold persist in isolated browser storage
 
 planner-policy-results.json
 Isolated candidate Chromium UI, all real official orders and uploaded date files; network disabled for planner tests
@@ -26,7 +37,7 @@ Isolated candidate browser with controlled date service; actual official cancell
 
 live-repair-results.json
 Actual repaired PowerShell 7.4.13 HTTP server on Linux, Windows-path fixtures, real Lunar public search, Chromium; no Windows/Edge or authenticated batch services
-- All batch/shared code preceding the planner and uploader/README unchanged; all existing server handlers unchanged
+- Protected code unchanged after reversing only authorized AI resume observer, Admin links/routes and telemetry calls
 - Real official Order 2101474 UI import resolved 62/62 live dates, 215 units, $555.75; ambiguous 11/4 is correctly 4 November; saved batch bytes unchanged
 - Repeat official order import preserves 215 units
 - Planner weekly CSV matches active future quantities; complete original ordered history retained
@@ -34,5 +45,4 @@ Actual repaired PowerShell 7.4.13 HTTP server on Linux, Windows-path fixtures, r
 - Standard Batch oldest-first x2 grouping and Shopify CSV byte-identical before/after
 - Existing Lunar invoice UI imports official 48 rows/205 units and Shopify CSV is byte-identical before/after
 
-Six controlled PowerShell date-route cases passed.
-Windows/Edge and authenticated external operations remain unrun.
+PowerShell usage tests: exact requests/responses/errors, cached tokens, unknown costs, private-data exclusion, damaged log and non-blocking storage failures passed. Actual local HTTP Admin, usage, observer and resume routes returned 200. PowerShell full source parsing passed. No billable OpenAI requests; no Shopify writes. Public Lunar dates were retrieved read-only. Native Windows PowerShell 5.1/Edge additions unrun.

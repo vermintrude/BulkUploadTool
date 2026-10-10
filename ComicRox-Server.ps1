@@ -25,6 +25,8 @@ function Safe-PhotoPath($p){
 }
 function Read-Body($req){$sr=New-Object IO.StreamReader($req.InputStream,$req.ContentEncoding);try{return $sr.ReadToEnd()}finally{$sr.Dispose()}}
 
+. (Join-Path $Root 'ComicRox-Usage.ps1')
+
 Remove-Item -LiteralPath $LogFile -ErrorAction SilentlyContinue
 Log "Starting. Root=$Root PhotoRoot=$PhotoRoot"
 if(-not (Test-Path -LiteralPath $PhotoRoot)){ Write-Host "ERROR: Photo folder not found: $PhotoRoot" -ForegroundColor Red; Log 'Photo folder missing'; Read-Host 'Press Enter to close'; exit 1 }
@@ -43,6 +45,11 @@ while($listener.IsListening){
   try {
     $path=$ctx.Request.Url.AbsolutePath; Log ($ctx.Request.HttpMethod+' '+$path)
     if($path -eq '/') { Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Listing-Tool.html'))) 'text/html; charset=utf-8'; continue }
+    if($path -eq '/admin' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Admin.html'))) 'text/html; charset=utf-8'; continue }
+    if($path -eq '/ComicRox-Resume.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Resume.js'))) 'application/javascript; charset=utf-8'; continue }
+    if($path -eq '/ComicRox-Admin.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Admin.js'))) 'application/javascript; charset=utf-8'; continue }
+    if($path -eq '/ComicRox-Usage.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Usage.js'))) 'application/javascript; charset=utf-8'; continue }
+    if($path -eq '/api/admin/usage' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Json $ctx (Get-ComicRoxUsage); continue }
     if($path -eq '/favicon.ico'){ Send-Bytes $ctx ([byte[]]@()) 'image/x-icon' 204; continue }
     if($path -eq '/api/health'){ Send-Json $ctx @{ok=$true;photoFolder=$PhotoRoot;photoFolderExists=(Test-Path -LiteralPath $PhotoRoot)}; continue }
     if($path -eq '/api/latest'){
@@ -399,7 +406,7 @@ Never estimate grade, condition, price or quantity. If uncertain, leave fields b
         max_completion_tokens=900
       } | ConvertTo-Json -Depth 12 -Compress
       try {
-        $ai=Invoke-RestMethod -Method Post -Uri 'https://api.openai.com/v1/chat/completions' -Headers @{Authorization="Bearer $openAIKey"} -ContentType 'application/json' -Body $payload -TimeoutSec 90
+        $ai=Invoke-ComicRoxAI -Body $payload -Key $openAIKey -Stage 'identification' -RunId ([string]$ctx.Request.Headers['X-ComicRox-Run']) -PhotoCount $photos.Count
       } catch {
         $detail=$_.Exception.Message
         try { if($_.ErrorDetails.Message){$detail=$_.ErrorDetails.Message} } catch {}
@@ -431,7 +438,7 @@ Use high confidence ONLY when every digit is visibly readable. If any leading or
         max_completion_tokens=250
       } | ConvertTo-Json -Depth 12 -Compress
       try {
-        $v=Invoke-RestMethod -Method Post -Uri 'https://api.openai.com/v1/chat/completions' -Headers @{Authorization="Bearer $openAIKey"} -ContentType 'application/json' -Body $verifyPayload -TimeoutSec 90
+        $v=Invoke-ComicRoxAI -Body $verifyPayload -Key $openAIKey -Stage 'issue verification' -RunId ([string]$ctx.Request.Headers['X-ComicRox-Run']) -PhotoCount $photos.Count
         $vr=([string]$v.choices[0].message.content) | ConvertFrom-Json
         $verified=[string]$vr.issue_number
         if($verified -match '^\d+(?:\.\d+)?$' -and ([string]$vr.confidence) -eq 'high'){

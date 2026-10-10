@@ -1,0 +1,73 @@
+ComicRox ADMIN API USAGE + STANDARD AI RESUME — ISOLATED TEST
+10 October 2026. Based on the working planner repair. No Live replacement yet.
+
+1. Let the current run finish. Do not refresh or close a working review without
+   exporting/backing it up: the old build does not save Standard review state.
+2. Extract this build to a NEW folder outside the current app, preferably outside
+   OneDrive. Keep the working planner repair folder and its server unchanged
+   until you are ready to switch. Both shipped builds use port 18789; only run
+   one server at a time. When ready, close the OLD SERVER console and launch
+   this folder's START-COMICROX-TOOL.bat. Use the same browser and localhost:18789.
+3. Existing saved planner orders/Lunar batches should remain because their keys
+   and origin are unchanged. Standard review recovery is new and explicit.
+4. ADMIN — API USAGE opens a separate tab. Usage recording begins with this
+   build; it cannot recover past requests or show account credit balance.
+5. Identification and issue-number verification are both recorded. Enter the
+   exact model's input/cached-input/output USD rates per million tokens from
+   OpenAI billing/pricing. No prices were invented. The configured model remains
+   gpt-6-astra. Returned model names can differ; set rates for each exact name.
+   Unknown rates or unavailable API usage show unknown cost, never free usage.
+6. Batch estimate appears after a complete two-request sample and its prices
+   are available. Set a daily USD warning threshold if desired. Warnings do
+   not stop processing. Admin refresh may wait while the single-threaded server
+   is identifying a comic; last loaded totals stay visible.
+
+STANDARD AI RESUME
+Completed comics are skipped on retry. On a timeout the progress explicitly
+says STOPPED, how many completed and how many remain. Existing AI results and
+manually corrected fields for completed comics are kept. Failed requests may
+still be chargeable and may need retry; this cannot recover an unseen response.
+There is no automatic billable retry. Model, prompts, two-pass verification,
+90-second timeout and output transformation are unchanged.
+
+SAVE REVIEW BACKUP downloads the current review as ComicRox-AI-Recovery.json.
+Keep it locally/private. RESTORE SAVED REVIEW restores the latest local browser
+checkpoint explicitly, or IMPORT REVIEW BACKUP loads a downloaded backup.
+Restoring never happens automatically and is blocked during AI processing.
+Photo files must remain at their original paths. The backup stores review and
+photo references, not photograph contents. Building a new review replaces the
+latest local checkpoint; download backups if you need to retain older reviews.
+New browser key: comicrox_standard_ai_checkpoint_v1. Existing keys unchanged.
+
+PRESERVING A REVIEW FROM THE OLD BUILD (OPTIONAL)
+Before closing/refeshing the old page, open Edge Developer Tools (F12), select
+Console, and run this exact expression only if you wish to export your own
+current review. Do not bypass a browser paste warning; you can type it instead:
+
+dl(new Blob([JSON.stringify({version:1,records},null,2)],{type:'application/json'}),'ComicRox-AI-Recovery.json')
+
+This downloads your local review and photo references; it sends nothing to a
+server. Import that file into this test build. Prior AI results are recognised
+from the original aiBaseTitle/confidence fields. Blank/manually entered titles
+alone are not treated as completed AI work. If you are uncomfortable with the
+Console, finish and export the current batch before switching instead.
+
+FILES / PRIVACY / MOVING
+ComicRox-API-Usage.ndjson is created beside the server and contains only request
+IDs/times/stage/model/token counts/status/photo counts. No keys, prompts,
+photographs or comic descriptions are recorded there. Download usage backup
+from Admin and retain the ndjson file when moving folders; new empty folder
+otherwise starts a new usage history. Pricing/threshold are local browser
+settings in comicrox_admin_usage_settings_v1. Keep localhost:18789 to retain
+browser data. Do not switch to 8788 or overwrite Live during this initial test.
+Moving the application does not move the photograph folder or credentials.
+Future Price Checker/Flow views are not implemented or connected.
+
+ROLLBACK
+Close this test server; restart the preserved planner repair from its original
+folder on port18789. No existing planner/Lunar storage is deleted or migrated.
+New telemetry and recovery files/keys can remain; the older build ignores them.
+Windows/Edge runtime validation of the additions is still required. All cloud
+checks used isolated data; no billable API requests or Shopify writes occurred.
+See TEST-EVIDENCE.txt. READ-ME-PLANNER-REPAIR.txt is historical for the original
+planner build; THIS document describes the additional authorised changes.
