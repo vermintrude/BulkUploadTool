@@ -1,0 +1,38 @@
+Cloud verification saved 10 October 2026
+
+planner-policy-results.json
+Isolated candidate Chromium UI, all real official orders and uploaded date files; network disabled for planner tests
+- Three official orders: 167 history lines/709 units/$1947.32; active forecast 445 units/$1233.08; next week 17 products/74 units/$184.07
+- Repeat import of all three orders leaves ledger bytes and quantities unchanged
+- Official positive/negative cancellation rows net to zero, retained separately, excluded from forecast
+- Amended same order updates only that order and preserves the previous revision
+- Release-day boundary: 5 copies retained on 4 November, excluded on 5 November, original history retained
+- Negative-only adjustment and unresolved-date amendment rejected without ledger mutation
+- Storage failure leaves saved and displayed quantities unchanged
+- Printable schedule uses the same active quantities
+- Forecast CSV contains STITCH once with qty 5 and exports 445 active units
+- Planner handoff preserves past prepared lines, reviewed title/price/description/image and original batch grouping
+- Existing Sunday invoice import retains 48 rows/205 units and does not alter planner order history or active forecast
+- Saved order history restores after browser reload
+
+planner-failure-results.json
+Isolated candidate browser with controlled date service; actual official cancelled-order fixture and uploaded date bridge
+- Stale cache is refreshed from the official date route
+- Conflicting date file rejected without changing cache
+- Identified legacy order migrates by order ID; genuine 4 + 1 becomes 5; legacy backup bytes retained
+- Unavailable dates leave existing orders and displayed quantities unchanged
+- Existing date bridge resolves pending official order automatically without re-entering lines
+- Unattributed legacy basket is preserved and cannot silently duplicate an identified order
+
+live-repair-results.json
+Actual repaired PowerShell 7.4.13 HTTP server on Linux, Windows-path fixtures, real Lunar public search, Chromium; no Windows/Edge or authenticated batch services
+- All batch/shared code preceding the planner and uploader/README unchanged; all existing server handlers unchanged
+- Real official Order 2101474 UI import resolved 62/62 live dates, 215 units, $555.75; ambiguous 11/4 is correctly 4 November; saved batch bytes unchanged
+- Repeat official order import preserves 215 units
+- Planner weekly CSV matches active future quantities; complete original ordered history retained
+- Refresh reloads saved forecast
+- Standard Batch oldest-first x2 grouping and Shopify CSV byte-identical before/after
+- Existing Lunar invoice UI imports official 48 rows/205 units and Shopify CSV is byte-identical before/after
+
+Six controlled PowerShell date-route cases passed.
+Windows/Edge and authenticated external operations remain unrun.

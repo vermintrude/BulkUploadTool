@@ -1,0 +1,46 @@
+ComicRox Delivery Planner repair - ISOLATED TEST - 10 October 2026
+
+Keep the working Live folder unchanged. Extract this ZIP into a NEW folder,
+for example BulkUploadTool\Planner-Test. Double-click START-COMICROX-TOOL.bat.
+Keep the console open. The test server uses port 18789, separate from Live 8788.
+The separate browser origin starts with separate application storage; an empty
+planner is expected. No existing Windows browser storage has been copied.
+
+Import your original Lunar Order_<order number>.csv files into the planner.
+Dates are retrieved by exact product code from Lunar public search. You can
+also import the supplied ComicRox-Lunar-Dates-Order-*.csv bridges using the new
+IMPORT LUNAR DATES control. Those files supply dates, never quantities.
+Import bridges first when testing without Internet, then the original orders.
+Unresolved dates leave existing orders untouched and keep the import pending.
+
+Rules confirmed by the owner:
+- Repeat import of the SAME order does not increase quantities.
+- A changed snapshot replaces only that order and retains previous revisions.
+- Separate order numbers are genuine purchases: STITCH 4 plus 1 equals 5.
+- Dates strictly before the As Of date leave the active forecast. Today stays.
+- Complete original ordered history remains saved. This is a forecast rule,
+  not verification of physical receipt. Sunday invoice processing is unchanged.
+
+The repair adds an order-ID ledger and date cache in NEW planner storage keys.
+The old planner snapshot and existing saved batches are not overwritten by
+order/date imports. Recognisable legacy order IDs can migrate; an unidentified
+legacy snapshot is preserved and blocked from silent combination.
+
+Only planner HTML logic/one planner button changed. The existing batch/shared
+logic, original batch grouping and existing server handlers are preserved.
+A new public-date handler, separate test port and launcher title were added.
+Shopify uploader and original README.txt are byte-identical to the Live copy.
+README.txt contains historical instructions; use THIS file for this test build.
+
+Cloud tests passed: actual PowerShell HTTP service and 62 live Lunar dates;
+three real orders, reimports, amendment isolation, cancellations, date cutoff,
+storage failures, date conflicts, unavailable dates and pending recovery;
+planner CSV/print/reload and preservation of reviewed prepared batch fields.
+Representative Standard Batch and Lunar invoice Shopify CSV exports were
+byte-identical before and after. See TEST-EVIDENCE.txt for details.
+
+Native Windows PowerShell 5.1/Edge and authenticated AI/Shopify/eBay workflows
+have not been exercised here. Test the isolated copy on Windows before any
+Live replacement. Do not upload to Shopify as part of the initial planner test.
+Rollback: close the test console and continue using the untouched Live folder.
+Do not delete original browser data or overwrite Live with this test archive.
