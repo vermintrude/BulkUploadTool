@@ -1,0 +1,137 @@
+DRAFT — Shopify Flow reporting, for review before activation
+10 October 2026. Existing batch app and existing Flow business actions unchanged.
+
+These are additive reporting actions, not replacement/importable .flow files.
+The exported .flow prefix/serialization contract has not been verified, so no
+fabricated import file is supplied. Validate these snippets in Shopify's Flow
+editor. Do not activate new reporting actions until the draft is reviewed.
+Official references (not retrievable from this cloud instance):
+https://help.shopify.com/en/manual/shopify-flow/reference/actions/send-admin-api-request
+https://shopify.dev/docs/api/admin-graphql/2026-07/mutations/metafieldsSet
+
+Reporting markers are merchant-owned Shopify metafields, namespace comicrox_flow.
+The app sends only GraphQL queries. Flow performs reporting writes using its own
+permissions. No new product-write permission is requested for the ComicRox app.
+Read access to product markers and shop summaries must be verified with the
+current installation. Native Flow editor/API validation is still outstanding.
+
+STEP 1 — Read-only diagnostic, before changing a Flow
+Open local Admin -> Shopify Actions -> Check Shopify connection.
+Copy the displayed gid://shopify/Shop/... value (not a token or secret).
+Use it in place of SHOP_GID_FROM_READ_ONLY_CHECK below.
+Refresh report initially should show no markers; this is expected, not failure.
+
+STEP 2 — Release Flow: add two separate per-product reporting actions
+Keep its trigger, query, tag names, productUpdate and existing connections.
+There are two parallel branches after removing Pre-Order:
+ A. Existing description productUpdate -> add Send Admin API request action
+ B. Existing Add New Release tags -> add another Send Admin API request action
+Choose mutation metafieldsSet for EACH new action.
+Do not connect the actions to the loop entry; each must follow the action whose
+success it records. Keep the description and tag branches separate as now.
+
+Action A input:
+{
+  "metafields": [{
+    "ownerId": "{{ getProductDataForeachitem.id }}",
+    "namespace": "comicrox_flow",
+    "key": "release_description_at",
+    "type": "date_time",
+    "value": {{ scheduledAt | json }}
+  }]
+}
+
+Action B input:
+{
+  "metafields": [{
+    "ownerId": "{{ getProductDataForeachitem.id }}",
+    "namespace": "comicrox_flow",
+    "key": "release_tags_at",
+    "type": "date_time",
+    "value": {{ scheduledAt | json }}
+  }]
+}
+
+Admin confirms a release ONLY when these two dates parse and represent the same
+scheduled instant. One missing/different marker is partial evidence and is not
+presented as ready for Crosslist. Do not mark either branch before its existing
+action succeeds. Both API call response/userErrors and native Flow run status
+must be checked during testing; request completion alone is not proof of a
+successful metafield mutation.
+
+STEP 3 — Release Flow: record that the product query completed, even with zero matches
+After the existing Get product data action add a separate sibling branch with
+Send Admin API request -> metafieldsSet. Keep its existing loop connection.
+This is a QUERY marker, deliberately not an unconditional "Flow succeeded"
+flag. Expected matched count is compared to per-product action markers by Admin.
+It must run outside the loop so a zero-match night still records its query.
+
+Input (replace SHOP_GID_FROM_READ_ONLY_CHECK):
+{% capture report %}{"schema":1,"workflow":"release","scheduled_at":{{ scheduledAt | json }},"matched":{{ getProductData.size | default: 0 }},"limit":100}{% endcapture %}
+{
+  "metafields": [{
+    "ownerId": "SHOP_GID_FROM_READ_ONLY_CHECK",
+    "namespace": "comicrox_flow",
+    "key": "release_query",
+    "type": "json",
+    "value": {{ report | json }}
+  }]
+}
+
+STEP 4 — 28-day ageing Flow: record action and query in the same way
+After the EXISTING Remove New Release tags action, add metafieldsSet:
+{
+  "metafields": [{
+    "ownerId": "{{ getProductDataForeachitem.id }}",
+    "namespace": "comicrox_flow",
+    "key": "aged_at",
+    "type": "date_time",
+    "value": {{ scheduledAt | json }}
+  }]
+}
+
+After Get product data, add a sibling QUERY-recording branch (outside loop):
+{% capture report %}{"schema":1,"workflow":"ageing","scheduled_at":{{ scheduledAt | json }},"matched":{{ getProductData.size | default: 0 }},"limit":100}{% endcapture %}
+{
+  "metafields": [{
+    "ownerId": "SHOP_GID_FROM_READ_ONLY_CHECK",
+    "namespace": "comicrox_flow",
+    "key": "ageing_query",
+    "type": "json",
+    "value": {{ report | json }}
+  }]
+}
+
+DO NOT change the inventory publishing Flow. It is outside this report scope.
+DO NOT change the release/ageing business queries or existing productUpdate.
+Reporting uses the scheduled timestamp; display is Europe/London. The existing
+queries' Liquid date evaluation and shop metafield indexing remain independent
+checks. The original product queries are capped at100; Admin flags a full100.
+
+SAFE VALIDATION BEFORE ACTIVATION
+Make inactive copies of both workflows; preserve exports of current versions.
+Validate the reporting action field names and Liquid rendering in the editor.
+A real run of the original business actions changes products: do not trigger a
+whole copied Flow against live products as a setup test. Review the exact plan
+first; if a test product is needed, authorise a narrow temporary test separately.
+When reporting writes are approved and tested, add them to the existing active
+Flows rather than leaving two copies executing their business changes nightly.
+Never activate both original and duplicate business-action workflows together.
+Validate successful writes by reading the marker values and inspecting native
+Flow run details. Any validation failure leaves the proposed setup unactivated.
+
+RETENTION AND LIMITS
+Shopify stores the latest query marker per Flow, and the latest reporting stage
+marker per product. They survive the app being closed overnight. This is NOT a
+full Shopify-hosted event archive: a later transition of the same product can
+overwrite older markers. Local Admin accumulates observed confirmed events and
+observed query summaries; download a private backup periodically. If the app was
+closed for several days, intermediate daily query markers may not be available.
+The report cannot recover pre-install history, deleted products, overwritten
+unobserved transitions or native Flow errors. Missing marker means unknown, not
+failed. Product links/SKUs/titles are read from the current product, not an event
+snapshot. Multiple-variant products show first SKU and a notice to open Shopify.
+
+MARK DONE is a LOCAL Crosslist follow-up checkbox; it does not publish, change
+inventory, or connect to Crosslist. Done state is keyed by product ID + release
+instant, not SKU or title. A genuinely later confirmed transition is a new task.

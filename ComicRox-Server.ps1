@@ -26,6 +26,7 @@ function Safe-PhotoPath($p){
 function Read-Body($req){$sr=New-Object IO.StreamReader($req.InputStream,$req.ContentEncoding);try{return $sr.ReadToEnd()}finally{$sr.Dispose()}}
 
 . (Join-Path $Root 'ComicRox-Usage.ps1')
+. (Join-Path $Root 'ComicRox-Shopify-Flow.ps1')
 
 Remove-Item -LiteralPath $LogFile -ErrorAction SilentlyContinue
 Log "Starting. Root=$Root PhotoRoot=$PhotoRoot"
@@ -45,6 +46,10 @@ while($listener.IsListening){
   try {
     $path=$ctx.Request.Url.AbsolutePath; Log ($ctx.Request.HttpMethod+' '+$path)
     if($path -eq '/') { Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Listing-Tool.html'))) 'text/html; charset=utf-8'; continue }
+    if($path -eq '/SHOPIFY-FLOW-SETUP-DRAFT.txt' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'SHOPIFY-FLOW-SETUP-DRAFT.txt'))) 'text/plain; charset=utf-8'; continue }
+    if($path -eq '/ComicRox-Shopify-Flow.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Shopify-Flow.js'))) 'application/javascript; charset=utf-8'; continue }
+    if($path -eq '/api/admin/shopify-setup' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Json $ctx (Get-ComicRoxFlowSetup); continue }
+    if($path -eq '/api/admin/shopify-report' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Json $ctx (Get-ComicRoxFlowReport); continue }
     if($path -eq '/admin' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Admin.html'))) 'text/html; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Resume.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Resume.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Admin.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Admin.js'))) 'application/javascript; charset=utf-8'; continue }

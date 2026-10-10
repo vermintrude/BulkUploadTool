@@ -1,4 +1,29 @@
-Admin/AI resume isolated cloud tests — 10 October 2026
+Shopify Actions test build — 10 October 2026
+
+flow-ui-results.json
+Isolated Chromium, mocked Shopify responses; no store access or mutations
+- Downloadable reporting draft fills only the checked shop ID and performs no store writes
+- Navigation preserves API Usage tab; read-only Shopify setup displays granted scopes and shop ID
+- Only matching branch markers create confirmed releases; missing branch shows partial evidence; zero-match query distinguished
+- Product titles escaped and Shopify links constrained to valid product IDs/store host
+- Done state survives reload and repeat report reads without duplicating tasks
+- Partial item becomes eligible once both markers match; later product transition creates a new task while earlier Done is retained
+- Read failure and storage quota failure retain prior snapshot/checklist
+- Private checklist backup/restoration works; malformed backup rejected without state change
+- London dates handled across midnight; malformed dates/hosts rejected; all report requests are GETs and no store writes occur
+
+http-results.json
+Actual PowerShell HTTP service; test-only settings and mocked Shopify transport, no live credentials/store access
+- Admin and report routes return 200
+- Existing settings parser/token exchange/query path exercised with synthetic values
+- No keys/tokens exposed in responses
+- Unconfigured reporting returns unknown, not a failed Flow
+
+source-protection-results.json
+
+- Main HTML and all batch/AI/usage/export scripts byte-identical to Admin baseline
+- Existing server handlers byte-identical after removing only additive helper source and read-only routes
+- All three uploaded Flow exports unchanged
 
 admin-resume-results.json
 Isolated Chromium; mocked AI and telemetry; no billable requests or store writes
@@ -11,38 +36,4 @@ Isolated Chromium; mocked AI and telemetry; no billable requests or store writes
 - Admin separates unknown costs, prices cached tokens correctly, estimates two-pass batch cost and displays daily warning
 - Admin pricing and threshold persist in isolated browser storage
 
-planner-policy-results.json
-Isolated candidate Chromium UI, all real official orders and uploaded date files; network disabled for planner tests
-- Three official orders: 167 history lines/709 units/$1947.32; active forecast 445 units/$1233.08; next week 17 products/74 units/$184.07
-- Repeat import of all three orders leaves ledger bytes and quantities unchanged
-- Official positive/negative cancellation rows net to zero, retained separately, excluded from forecast
-- Amended same order updates only that order and preserves the previous revision
-- Release-day boundary: 5 copies retained on 4 November, excluded on 5 November, original history retained
-- Negative-only adjustment and unresolved-date amendment rejected without ledger mutation
-- Storage failure leaves saved and displayed quantities unchanged
-- Printable schedule uses the same active quantities
-- Forecast CSV contains STITCH once with qty 5 and exports 445 active units
-- Planner handoff preserves past prepared lines, reviewed title/price/description/image and original batch grouping
-- Existing Sunday invoice import retains 48 rows/205 units and does not alter planner order history or active forecast
-- Saved order history restores after browser reload
-
-planner-failure-results.json
-Isolated candidate browser with controlled date service; actual official cancelled-order fixture and uploaded date bridge
-- Stale cache is refreshed from the official date route
-- Conflicting date file rejected without changing cache
-- Identified legacy order migrates by order ID; genuine 4 + 1 becomes 5; legacy backup bytes retained
-- Unavailable dates leave existing orders and displayed quantities unchanged
-- Existing date bridge resolves pending official order automatically without re-entering lines
-- Unattributed legacy basket is preserved and cannot silently duplicate an identified order
-
-live-repair-results.json
-Actual repaired PowerShell 7.4.13 HTTP server on Linux, Windows-path fixtures, real Lunar public search, Chromium; no Windows/Edge or authenticated batch services
-- Protected code unchanged after reversing only authorized AI resume observer, Admin links/routes and telemetry calls
-- Real official Order 2101474 UI import resolved 62/62 live dates, 215 units, $555.75; ambiguous 11/4 is correctly 4 November; saved batch bytes unchanged
-- Repeat official order import preserves 215 units
-- Planner weekly CSV matches active future quantities; complete original ordered history retained
-- Refresh reloads saved forecast
-- Standard Batch oldest-first x2 grouping and Shopify CSV byte-identical before/after
-- Existing Lunar invoice UI imports official 48 rows/205 units and Shopify CSV is byte-identical before/after
-
-PowerShell usage tests: exact requests/responses/errors, cached tokens, unknown costs, private-data exclusion, damaged log and non-blocking storage failures passed. Actual local HTTP Admin, usage, observer and resume routes returned 200. PowerShell full source parsing passed. No billable OpenAI requests; no Shopify writes. Public Lunar dates were retrieved read-only. Native Windows PowerShell 5.1/Edge additions unrun.
+PowerShell report tests passed: read-only setup/report queries; all pages; incomplete markers; zero-match summary; unconfigured state; GraphQL and network failures; invalid summary; cursor stall; duplicate-ID rejection; full source parsing. Actual HTTP routes and native request/settings parsing were exercised with synthetic authentication/Shopify transport. No live Shopify/Flow API validation, Windows test or paid OpenAI request. Previous batch/planner cloud and owner Windows tests remain evidence for the unchanged inherited processing.

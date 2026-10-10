@@ -1,0 +1,73 @@
+ComicRox SHOPIFY ACTIONS — ISOLATED REPORT TEST / FLOW SETUP DRAFT
+10 October 2026. Based on Admin Usage + AI Resume; batch processing unchanged.
+
+This build adds Admin -> Shopify Actions. It reads Shopify through the existing
+local settings file, shows confirmed recorded releases and a local Crosslist
+Outstanding/Done checklist, and compares nightly query counts to action markers.
+It does NOT change products, stock, collections, Flows or Crosslist listings.
+No revised Flows have been activated; reporting must be configured later.
+
+INITIAL TEST — NOTHING TO CHANGE IN SHOPIFY YET
+1. Finish any existing batch, save review/usage backups and close its SERVER
+   console before switching. Do not refresh an unsaved old Standard review.
+2. Extract to a NEW folder outside the current app, preferably outside OneDrive.
+   Preserve the working Admin build. Only one server can use shipped port18789.
+3. If ComicRox-API-Usage.ndjson exists in your current folder, copy it into this
+   new folder while the old server is stopped to retain recorded API history.
+   Existing browser orders/batches/recovery/settings remain at localhost:18789.
+4. Launch START-COMICROX-TOOL.bat. Open ADMIN -> Shopify Actions.
+5. Click Check Shopify connection. This reads shop ID/name and granted scopes.
+   Do not copy/reveal tokens or client secrets; none are displayed by the page.
+6. Click Refresh Shopify report. Until recording is configured, expect no
+   reporting markers. This is not a Flow-failure result. An error here may mean
+   the current installation cannot read shop markers or the query needs native
+   validation. Keep settings unchanged and report the exact status message.
+7. Download reporting setup draft. It fills in only the checked shop ID.
+   Review that file before adding ANY reporting actions in Shopify Flow.
+
+WHAT THE REPORT MEANS
+A release is confirmed only when both the description-update branch and
+New Release tag-add branch have reporting markers for the SAME scheduled time.
+A partial marker is shown as incomplete evidence, not a Crosslist-ready item.
+Query snapshots include zero-match nights. Matching expected/recorded product
+counts provides evidence of completed actions for that query, not access to
+Shopify's native execution logs or a guarantee of every possible side effect.
+Missing marker is unknown, not failed. Saved snapshot date is visible; failed
+refreshes retain stale history and explicitly report the read failure.
+The original nightly queries are limited to100 products; a full100 is flagged.
+
+RETENTION / CHECKLIST
+Shopify keeps the latest stage marker per product and latest query marker per
+workflow. They remain while your PC is off. Local Admin accumulates confirmed
+product+release-time events and observed query snapshots. It cannot reconstruct
+unobserved overwritten events, deleted products or pre-recording history. It is
+not a full hosted event archive. Titles/SKUs/links reflect current product data.
+The first variant SKU is shown; additional variants are flagged for review.
+Done status is local, reversible and survives repeat reads/reloads. Mark done
+only after you have handled the product in Crosslist. It never publishes.
+New localStorage key: comicrox_shopify_actions_v1. Old keys untouched.
+Download a private checklist backup periodically and before changing browsers.
+Restore replaces only this report's local history/checklist with confirmation.
+
+SCOPE AND VALIDATION
+Entire main HTML, batch/export code, AI resume and API usage scripts are
+byte-identical to the preserved Admin build. Server changes are only helper
+loading and four read-only/static routes. Admin HTML adds two tabs; existing
+API Usage JavaScript is unchanged. Shopify permissions are read_files,
+write_files,read_products per owner screenshot; actual granted scopes and shop
+metafield access must be checked locally. No product-write access requested.
+Tests used synthetic Shopify data and a real local PowerShell HTTP service;
+no live store credentials, no Shopify writes, no paid OpenAI requests.
+Flow editor/Liquid/native API and Windows additions are not yet validated.
+Official reference access was blocked by cloud egress policy; this is recorded
+rather than inventing verification or producing an unsupported .flow file.
+See TEST-EVIDENCE.txt and SHOPIFY-FLOW-SETUP-DRAFT.txt for reviewable snippets.
+Inventory publishing Flow, existing tag queries and batch app remain unchanged.
+
+ROLLBACK
+Close this test server and restart the preserved Admin build on port18789.
+Keep API usage ndjson in the original folder or copy its latest version back
+while both servers are stopped. Existing browser storage keys were not deleted.
+The older Admin build ignores the new checklist key. No Flow rollback is needed
+because none has been changed or activated by this work.
+READ-ME-ADMIN-TEST.txt describes inherited AI resume/usage functionality.
