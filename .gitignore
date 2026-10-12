@@ -4,3 +4,9 @@ ComicRox-AI-Recovery*.json
 ComicRox-API-Usage-Backup*.json
 ComicRox-Shopify-Actions-Backup*.json
 ComicRox-Flow-Setup-DRAFT*.txt
+
+# Private TikTok reconciliation output/backups: never publish business data.
+ComicRox-TikTok-Additions-*.xlsx
+ComicRox-TikTok-Review.xlsx
+ComicRox-TikTok-Sync-Backup.json
+ComicRox-TikTok-*.csv

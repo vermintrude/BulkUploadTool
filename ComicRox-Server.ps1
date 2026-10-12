@@ -50,6 +50,9 @@ while($listener.IsListening){
     if($path -eq '/ComicRox-Shopify-Flow.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Shopify-Flow.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/api/admin/shopify-setup' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Json $ctx (Get-ComicRoxFlowSetup); continue }
     if($path -eq '/api/admin/shopify-report' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Json $ctx (Get-ComicRoxFlowReport); continue }
+    # Separate local-only TikTok reconciliation files. Existing handlers remain unchanged.
+    $tikTokFiles=@{'/tiktok'=@('ComicRox-TikTok.html','text/html; charset=utf-8');'/ComicRox-TikTok.js'=@('ComicRox-TikTok.js','application/javascript; charset=utf-8');'/ComicRox-Zip.js'=@('ComicRox-Zip.js','application/javascript; charset=utf-8');'/ComicRox-TikTok-Blank-Template.xlsx'=@('ComicRox-TikTok-Blank-Template.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+    if($ctx.Request.HttpMethod -eq 'GET' -and $tikTokFiles.ContainsKey($path)){ $entry=$tikTokFiles[$path]; Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root $entry[0]))) $entry[1]; continue }
     if($path -eq '/admin' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Admin.html'))) 'text/html; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Resume.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Resume.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Admin.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Admin.js'))) 'application/javascript; charset=utf-8'; continue }

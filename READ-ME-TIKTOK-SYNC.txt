@@ -1,0 +1,30 @@
+COMICROX — TIKTOK SYNC — SEPARATE TEST RELEASE
+
+INSTALL / ROLLBACK
+Finish and save any current batch. Back up Standard AI checkpoints, API usage and Shopify Actions checklist through existing Admin controls. Download/extract this release into a NEW folder; preserve your working folder. Stop the existing local server before launching START-COMICROX-TOOL.bat from this copy. Keep port18789 and the same browser to retain original browser storage. If you want existing API history, copy ComicRox-API-Usage.ndjson privately between stopped app folders. No other settings or credentials need changing. Open Admin, then TikTok Sync. To roll back, stop this copy and launch your preserved old folder.
+
+UNCHANGED TOOLS
+Standard/Lunar listing HTML, planner, Product Data, Review, Invoice, Publish, image uploader, AI model (Sol), usage, resume/checkpoint and Shopify Actions scripts remain byte-identical to the prior Sol release. Changes to existing files are only a TikTok navigation link in Admin HTML and four static GET routes in the local server. No TikTok login/API/store mutations. No unrelated next-release title/history changes included.
+
+STEP1 — SOURCES
+Download a FRESH full Shopify CSV. Download TikTok All information XLSX files for Live, Failed/Needs attention, Deactivated and Draft. Label each upload using the source-status selector; the exported status cell can incorrectly say Live for Failed listings. ZIPs containing multiple XLSX files are supported. Include stock quantities. Check each complete/empty confirmation only after exporting all products for that status or verifying the status is empty. Sources are kept in browser memory, not saved externally. No cloud upload.
+
+STEP2 — PACKING
+Enter actual packed weight in grams and dimensions in cm. Default SINGLE145g33x21x0.5cm comes from owner's confirmation; it is not measured by the app. Graded/bundle defaults blank; enter measured profile or per-item values. Copies in stock do not determine parcel thickness. Preorder-tagged products, missing images, unsupported category and multiple variants are held. Decimal0.5cm is retained; if TikTok rejects it, check the actual parcel/accepted field units before rounding. An optional NEW TikTok create template can replace bundled prior working template; Bulk edit templates rejected. Bundled template contains no owner's product rows.
+
+STEP3 — MATCHING / CHECKLISTS
+Shopify master eligibility requires active+published+positive stock. Entire Shopify catalogue is used to distinguish archived/unpublished/out-of-stock from absent. Exact normalized title match or an explicitly confirmed stored TikTokID-to-Shopifyvariant link counts as same product. Unique SKU and title narrow multi-variant cases; SKU alone never proves identity. Reused codes, changed titles, approximate candidates and unmatched TikTok rows require manual review. In Check identity manually, select a candidate and Confirm same product only after checking issue, edition, grade and variant. No confident master match is not automatic proof of a sale; it stays in review. Confirm packing/availability via held-row controls only if accurate.
+
+On screen: Ready additions; Remove/zero-stock recommendations with TikTok IDs and source status; Check identity; Held products; Existing stock/price differences. CSV/XLSX review downloads come from the LOCAL APP, not chat. They are not import files. Change/deactivate listings manually; never delete the whole catalogue to use additions.
+
+STEP4 — CREATE
+Confirm all four status coverages and packing, then download additions XLSX. It preserves create-template headers/support sheets and removes all prior product rows. Positive price/stock, public image URLs and confirmed numeric parcels required. Unique internal TikTok SKUs created where Shopify SKUs blank/reused/collide; mappings persist without changing Shopify SKUs. Review workbook includes stored mappings after generation. Use TikTok Bulk actions → Upload in bulk (NOT Bulk edit → Upload). Check actual TikTok validation before publishing. Source snapshots become stale after subsequent sales; rerun on fresh exports.
+
+STEP5 — OUTCOME / SAFE RETRIES
+Generation saves a run with its actual workbook and marks rows pending BEFORE download. Those rows cannot be regenerated while pending/successful. Download the SAME saved file from run history after a failed download or browser reload; this only retries delivery, not upload. Never upload the same file twice after rows succeeded. Record successful seller SKUs explicitly. Only release failed/not-uploaded SKUs after checking TikTok; confirmed-success rows cannot be released. Then compare again to produce only eligible retry rows. This tool cannot automatically discover TikTok upload outcomes. Download backup before moving browsers; browser storage failures block generation rather than losing the run record. If browser storage fills, preserve backup before making any clearing decision.
+
+CONFIRMATION LIMITS
+Browser XLSX/ZIP/CSV processing and workbook integrity tested in cloud Chromium; actual Windows local server/store import acceptance needs owner test. Physical weights are owner declarations. Approximate identity matching deliberately withholds candidates; counts may differ from one-off manual comparison. Latest supplied example gives136ready additions rather than earlier137 because one extra uncertain candidate is held. Do not use either on top of an already successful137-item import; export TikTok fresh first.
+
+LOCAL DOWNLOADS
+Generated and review files download through the browser while local server running. Browser Downloads Ctrl+J shows them. They do not use the chat's failing cloud file service. The release ZIP is distributed separately on GitHub with CODE/BLANK TEMPLATE ONLY, no product exports/credentials/checklists. Third-party ZIP library JSZip3.10.1 included locally under MIT license; no external runtime CDN dependency.
