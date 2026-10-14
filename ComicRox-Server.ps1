@@ -36,7 +36,7 @@ $listener=New-Object System.Net.HttpListener
 $listener.IgnoreWriteExceptions=$true
 $listener.Prefixes.Add("http://localhost:$Port/")
 try { $listener.Start() } catch { Write-Host "Could not start local server: $($_.Exception.Message)" -ForegroundColor Red; Log $_.Exception.ToString(); Read-Host 'Press Enter to close'; exit 1 }
-Write-Host "ComicRox Listing Tool V2.5.23 running at http://localhost:$Port/" -ForegroundColor Green
+Write-Host "ComicRox Listing Tool V2.6.0 guided workflow test running at http://localhost:$Port/" -ForegroundColor Green
 Write-Host "Photo folder: $PhotoRoot"
 Write-Host 'KEEP THIS WINDOW OPEN while using the tool.' -ForegroundColor Yellow
 Start-Process "http://localhost:$Port/"
@@ -54,6 +54,7 @@ while($listener.IsListening){
     $tikTokFiles=@{'/tiktok'=@('ComicRox-TikTok.html','text/html; charset=utf-8');'/ComicRox-TikTok.js'=@('ComicRox-TikTok.js','application/javascript; charset=utf-8');'/ComicRox-Zip.js'=@('ComicRox-Zip.js','application/javascript; charset=utf-8');'/ComicRox-TikTok-Blank-Template.xlsx'=@('ComicRox-TikTok-Blank-Template.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
     if($ctx.Request.HttpMethod -eq 'GET' -and $tikTokFiles.ContainsKey($path)){ $entry=$tikTokFiles[$path]; Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root $entry[0]))) $entry[1]; continue }
     if($path -eq '/admin' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Admin.html'))) 'text/html; charset=utf-8'; continue }
+    if($path -eq '/ComicRox-Lunar-Workflow.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Lunar-Workflow.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Resume.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Resume.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Admin.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Admin.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Usage.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Usage.js'))) 'application/javascript; charset=utf-8'; continue }

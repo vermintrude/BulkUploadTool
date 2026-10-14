@@ -1,0 +1,98 @@
+ComicRox 2.6.0 — guided Lunar workflow — isolated trial release
+
+INSTALL AND ROLLBACK
+1. Download the complete branch ZIP and extract it. Do not run inside the ZIP.
+2. Close the old ComicRox server console. Keep the same browser/profile and
+   http://localhost:18789 origin; its saved keys, orders and batches stay there.
+3. Rename your current Live folder to Live-before-2.6.0. Keep it as rollback.
+4. Create a new Live folder and copy ALL extracted application files into it
+   (not the enclosing ZIP folder). Keep the Shopify-env-dont-delete folder
+   and other private settings outside Live where they already are.
+5. If present, COPY ComicRox-API-Usage.ndjson from the old Live to the new Live
+   to retain local cost history. Never share private logs or backup JSON.
+6. Run START-COMICROX-TOOL.bat in the new Live. Hard refresh the existing
+   browser tab. The heading must say V2.6.0 GUIDED LUNAR WORKFLOW TEST.
+7. Saved Work & History offers CURRENT and PRE-UPGRADE Lunar backup downloads.
+   Download both before your first import. Keep AI review and checklist backups
+   through their existing controls too. Do not clear browser/site data.
+Rollback: stop the new console, keep a copy of it, put the old Live folder back
+and start its launcher at the same origin. If you need the pre-upgrade Lunar
+state, first back up your current work and restore the pre-upgrade snapshot
+using the new version's Restore Lunar Backup control before rolling back.
+Folder rollback alone does not undo browser edits made after installation.
+
+PREPARE THE WEEK COMMENCING 26 OCTOBER
+1. ORDER & PLAN: import original Order_*.csv files. Different order numbers
+   accumulate; an identical order is not added twice; an amendment updates its
+   own order. Code/InStoreDate-only files go in IMPORT LUNAR DATES instead.
+2. Pick w/c 26 October; SEND TO WEBSITE PREP. Returning to an existing saved
+   week preserves reviewed fields. No saved products are silently filtered out.
+3. PRODUCT DATA: START / RETRY retrieves descriptions and images. If needed,
+   the manual file is Lunar Format Product Data CSV, with Code/ImageUrl columns.
+4. CONTINUE TO REVIEW & PRICE: check title, image, date, price and quantities.
+   Save Review leads to CHECK SHOPIFY & EXPORT. Free promo items are excluded
+   by default; explicitly include one only after giving it a price and image.
+5. Export ALL products from Shopify. Load it in CHECK CURRENT SHOPIFY PRODUCTS
+   and confirm it contains all statuses, not a filtered selection. The check
+   expires after 30 minutes and after a CSV download or recorded outcome.
+6. Download NEW-products CSV, preview it in Shopify and import it once. Record
+   the outcome. A pending export blocks another new export of the same codes;
+   Download same file provides an exact copy if the download was lost.
+7. Fresh Shopify exports identify products already there by CR-LUNAR-code SKU,
+   including archived products. Existing products are excluded and reported.
+   This app does NOT automatically add stock or overwrite existing listings.
+
+WHEN NEXT WEEK'S INVOICE ARRIVES
+Use INVOICE — WHEN RECEIVED and original Invoice_*.csv. You may do this before
+preparation if the invoice is already available. The invoice becomes a separate
+saved batch, using exact invoiced quantities/costs and retaining prepared title,
+price, description and image by code. All invoice products are retained even
+when release dates span several weeks. Original preparation remains saved.
+An identical invoice reopens its existing batch without adding quantities.
+An amended invoice with the same number is blocked for review rather than
+silently changing saved quantities. Negative adjustments and repeated invoice
+codes are also blocked for review. Do not send the planner week again to replace
+an imported invoice. The on-screen guide identifies which batch is loaded.
+Existing Shopify products are reported, never recreated in the new-product CSV.
+Invoice means billed; it does NOT mean physically received or extra stock to add.
+For partial Shopify import success, leave the run pending and load a fresh full
+Shopify export. Do not mark all imported or cancel a partially imported file.
+
+OTHER CORRECTIONS
+- Lunar US/ISO dates validated; Shopify receives ISO dates in the real custom
+  release_date metafield. Future books get Pre-Order and its title/warning;
+  recent releases get New Release, with the 28-day boundary respected.
+- Titles lose brackets, preserve issue/edition and use selective abbreviation.
+  Owner titles already under 80 characters are retained. Unresolved overlong
+  titles block export for review, never lose arbitrary characters. Shopify's
+  temporary PRE-ORDER suffix can exceed 80; the base title must fit eBay.
+- Ordinary individual comics use 120g in Shopify exports. Standard graded/slab,
+  bundle/set entries retain their prior weight; TikTok's 145g PACKED default is
+  unchanged. Supplies, sets and unusual formats require separate measured
+  shipping weights and must not be processed as ordinary Lunar singles.
+- Previous four completed weeks have a read-only saved cost view: exchange
+  rate, inbound freight, mailer, purchase cost, quantity and prepared costs.
+  Values not stored by old versions are shown as unavailable. Cost estimates
+  are not final actual shipping bills or proof of physical receipt.
+- Release-report label reflects 02:30 Europe/London. Draft reporting count uses
+  the native Flow-compatible explicit loop. No live Shopify Flow was modified.
+
+IMPORTANT SHIPPING CHECK
+Your current weight bands were based on heavier comics. With 120g per comic
+and a 40g default package, 3 comics = 400g, 8 = 1,000g, 20 = 2,440g. Review the
+shipping boundaries against actual packaging before relying on count labels.
+This release has not changed your Shopify shipping profiles or checkout.
+
+VERIFICATION AND LIMITS
+Private real-file tests: order repeat/amendment/cancellation, invoice repeat,
+partial quantities, wrong files, invalid dates, existing SKU, pending exports,
+owner field preservation, saved costs, reload, AI resume, Admin and TikTok.
+PowerShell HTTP routes verified with local mocked credentials; no paid AI calls,
+Shopify writes or changes to business Flows were performed during testing.
+Actual Windows/Edge installation and authenticated Lunar download are the next
+owner trial. If anything fails, keep saved work and report the on-screen message.
+
+FUTURE DISTRIBUTION
+The guided workflow is a separate local JS component. Existing credentials and
+Windows path handling are preserved. A colleague installer/settings onboarding
+is future work; no secrets or private business files are included in this ZIP.

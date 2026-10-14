@@ -67,7 +67,9 @@ flag. Expected matched count is compared to per-product action markers by Admin.
 It must run outside the loop so a zero-match night still records its query.
 
 Input (replace SHOP_GID_FROM_READ_ONLY_CHECK):
-{% capture report %}{"schema":1,"workflow":"release","scheduled_at":{{ scheduledAt | json }},"matched":{{ getProductData.size | default: 0 }},"limit":100}{% endcapture %}
+{% assign matchedCount = 0 %}
+{% for product in getProductData %}{% assign matchedCount = matchedCount | plus: 1 %}{% endfor %}
+{% capture report %}{"schema":1,"workflow":"release","scheduled_at":{{ scheduledAt | json }},"matched":{{ matchedCount }},"limit":100}{% endcapture %}
 {
   "metafields": [{
     "ownerId": "SHOP_GID_FROM_READ_ONLY_CHECK",
@@ -91,7 +93,9 @@ After the EXISTING Remove New Release tags action, add metafieldsSet:
 }
 
 After Get product data, add a sibling QUERY-recording branch (outside loop):
-{% capture report %}{"schema":1,"workflow":"ageing","scheduled_at":{{ scheduledAt | json }},"matched":{{ getProductData.size | default: 0 }},"limit":100}{% endcapture %}
+{% assign matchedCount = 0 %}
+{% for product in getProductData %}{% assign matchedCount = matchedCount | plus: 1 %}{% endfor %}
+{% capture report %}{"schema":1,"workflow":"ageing","scheduled_at":{{ scheduledAt | json }},"matched":{{ matchedCount }},"limit":100}{% endcapture %}
 {
   "metafields": [{
     "ownerId": "SHOP_GID_FROM_READ_ONLY_CHECK",
