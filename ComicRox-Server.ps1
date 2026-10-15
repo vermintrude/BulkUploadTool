@@ -27,6 +27,7 @@ function Read-Body($req){$sr=New-Object IO.StreamReader($req.InputStream,$req.Co
 
 . (Join-Path $Root 'ComicRox-Usage.ps1')
 . (Join-Path $Root 'ComicRox-Shopify-Flow.ps1')
+. (Join-Path $Root 'ComicRox-Shopify-Products.ps1')
 
 Remove-Item -LiteralPath $LogFile -ErrorAction SilentlyContinue
 Log "Starting. Root=$Root PhotoRoot=$PhotoRoot"
@@ -36,7 +37,7 @@ $listener=New-Object System.Net.HttpListener
 $listener.IgnoreWriteExceptions=$true
 $listener.Prefixes.Add("http://localhost:$Port/")
 try { $listener.Start() } catch { Write-Host "Could not start local server: $($_.Exception.Message)" -ForegroundColor Red; Log $_.Exception.ToString(); Read-Host 'Press Enter to close'; exit 1 }
-Write-Host "ComicRox Listing Tool V2.6.0 guided workflow test running at http://localhost:$Port/" -ForegroundColor Green
+Write-Host "ComicRox Listing Tool V2.6.1 TikTok selected products test running at http://localhost:$Port/" -ForegroundColor Green
 Write-Host "Photo folder: $PhotoRoot"
 Write-Host 'KEEP THIS WINDOW OPEN while using the tool.' -ForegroundColor Yellow
 Start-Process "http://localhost:$Port/"
@@ -50,6 +51,14 @@ while($listener.IsListening){
     if($path -eq '/ComicRox-Shopify-Flow.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Shopify-Flow.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/api/admin/shopify-setup' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Json $ctx (Get-ComicRoxFlowSetup); continue }
     if($path -eq '/api/admin/shopify-report' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Json $ctx (Get-ComicRoxFlowReport); continue }
+    if($path -eq '/api/shopify/product-search' -and $ctx.Request.HttpMethod -eq 'POST'){
+      try { $body=(Read-Body $ctx.Request)|ConvertFrom-Json; Send-Json $ctx (Find-ComicRoxShopifyProducts ([string]$body.term)) }
+      catch { Send-Json $ctx @{ok=$false;error=$_.Exception.Message} 400 }; continue
+    }
+    if($path -eq '/api/shopify/selected-products' -and $ctx.Request.HttpMethod -eq 'POST'){
+      try { $body=(Read-Body $ctx.Request)|ConvertFrom-Json; Send-Json $ctx (Get-ComicRoxShopifySelectedProducts $body.ids) }
+      catch { Send-Json $ctx @{ok=$false;error=$_.Exception.Message} 400 }; continue
+    }
     # Separate local-only TikTok reconciliation files. Existing handlers remain unchanged.
     $tikTokFiles=@{'/tiktok'=@('ComicRox-TikTok.html','text/html; charset=utf-8');'/ComicRox-TikTok.js'=@('ComicRox-TikTok.js','application/javascript; charset=utf-8');'/ComicRox-Zip.js'=@('ComicRox-Zip.js','application/javascript; charset=utf-8');'/ComicRox-TikTok-Blank-Template.xlsx'=@('ComicRox-TikTok-Blank-Template.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
     if($ctx.Request.HttpMethod -eq 'GET' -and $tikTokFiles.ContainsKey($path)){ $entry=$tikTokFiles[$path]; Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root $entry[0]))) $entry[1]; continue }

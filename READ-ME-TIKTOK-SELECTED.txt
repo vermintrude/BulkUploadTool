@@ -1,0 +1,86 @@
+ComicRox 2.6.1 — selected TikTok products (isolated installation trial)
+15 October 2026
+
+WHAT THIS ADDS
+Keep doing your existing Shopify/eBay/Whatnot process. At the end, open
+Admin -> TikTok Sync -> Selected products — no exports.
+Search your own Shopify store by title, SKU or product link, choose the exact
+books and create their TikTok upload workbook. No full Shopify export, TikTok
+export or catalogue comparison is required in this mode. 1–20 products per run.
+The existing Full catalogue comparison mode is still available unchanged.
+
+INSTALL
+- Stop the current ComicRox server console.
+- Keep the existing Live folder as Live-before-2.6.1 (copy private logs too).
+- Extract the complete new ZIP. Copy ALL application files into a new Live
+  folder. Do not run inside the ZIP or copy only the HTML/JS files: the new
+  Shopify product helper and server routes are required.
+- Keep the existing Shopify-env-dont-delete credentials folder where it is.
+  No new API key or app permission is requested; the read_products access
+  already used by Shopify Actions supplies these lookups.
+- Start START-COMICROX-TOOL.bat. Use your usual browser/profile and the SAME
+  localhost:18789 origin so existing saved work and credentials remain there.
+- Ctrl+F5 refresh. The main header says V2.6.1 TIKTOK SELECTED PRODUCTS TEST;
+  TikTok Sync says 2.6.1 and shows Selected products — no exports.
+- If the old Live has ComicRox-API-Usage.ndjson, copy it into new Live to retain
+  local cost history. If absent, skip that optional file.
+Rollback: stop the new server and restore/start the old Live folder at the
+same origin. Do not clear browser storage. New upload history is compatible
+with the previous TikTok Sync schema. Download its backup before switching.
+
+QUICK ADDITIONS — THE ON-SCREEN STEPS
+1. Admin -> TikTok Sync -> Selected products — no exports.
+2. Enter a title/SKU or paste the Shopify product-page link. For several books,
+   enter one search per line (up to 20). Click Search Shopify.
+3. Tick the exact issues/covers in the results, then Add checked products to
+   this batch. Current Shopify description, pictures, price and stock load.
+   Add further searches if needed. Remove anything that should not upload.
+4. Check these products are not already on TikTok, including failed, draft and
+   deactivated products. Tick the confirmation. This route DOES NOT check the
+   live TikTok catalogue. It still blocks pending/successful uploads recorded
+   in this browser's saved history.
+5. Confirm PACKED parcel weights/dimensions. Singles retain the existing
+   owner-supplied 145g, 33 x 21 x 0.5cm defaults; Shopify's 120g product weight
+   excludes packaging and must not replace the TikTok packed weight.
+6. Click Review selected products. Check prices, quantities and images.
+   Missing data, inactive/unpublished/no-stock products, unsupported categories,
+   multiple variants and unmeasured slabs/bundles are held. Resolve or remove
+   held products before generating a selected batch. A preorder requires the
+   existing explicit confirmation that stock is actually available to ship.
+7. Download additions XLSX. Shopify is read again immediately beforehand. If
+   any selected details changed, current data replaces the review and a new
+   review/confirmation is required; no stale file is downloaded.
+8. TikTok Seller Center -> Products -> Add products -> Upload in bulk. Upload
+   this generated XLSX and review TikTok's validation before publishing.
+9. Record successful seller SKUs under import results. For a failed/lost file,
+   use Download same file again rather than create duplicate runs. Release
+   only confirmed failed/not-uploaded rows; successful rows cannot be released.
+
+WHAT IS AND IS NOT AUTOMATIC
+- Reads existing Shopify products through the app's saved OAuth credentials.
+- New fixed queries only; no Shopify products, stock, tags, collections, Flow
+  settings, eBay or Whatnot listings are changed.
+- Does not connect to or publish directly to TikTok. You upload and publish
+  the workbook in TikTok Seller Center.
+- Quick mode uses stable generated CR-TT seller SKUs to avoid reusing the
+  CR-WEB identifiers used by different Shopify batches. Shopify SKUs are not
+  changed. Existing TikTok SKU mappings and prior run history are preserved.
+- Selected product details are session-only; generated workbooks/history are
+  saved under the existing TikTok Sync browser key. Back up before moving
+  browsers or clearing site data. Refresh price/stock if you leave it open.
+- The bundled template remains the existing working Comics & Manga CREATE
+  workbook. You can load TikTok's current create template using the existing
+  optional template control. Bulk EDIT workbooks are not create templates.
+
+TEST EVIDENCE AND REMAINING OWNER CHECK
+Automated isolated Chromium tests exercised one selected product and ten
+selected products, no exports, reused source SKUs, exact downloaded workbook
+rows, packing/availability checks, stock changing before download, API failure,
+reload and exact saved-file retry. Openpyxl independently checked the 41-column,
+13-sheet output and preserved price/quantity/description/packing values.
+Real PowerShell server + OAuth/query helpers + HTTP routes were exercised end
+to end with mocked upstream Shopify responses; no private credentials or
+billable AI calls were used. Real authenticated Shopify search on Windows/Edge
+and TikTok's live validation remain owner acceptance checks.
+Original Standard/Lunar logic, saved keys, AI and Flow business logic are
+unchanged. Full-comparison TikTok regression and AI/Admin/Lunar checks passed.

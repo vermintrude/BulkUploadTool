@@ -64,3 +64,27 @@ PowerShell parser passed. Actual server GET /, new JS, /admin, /tiktok and
 byte-identical. Subsequent Admin change is only the release-time display label.
 Live Windows/Edge installation, authenticated Lunar download and actual Shopify
 CSV import remain owner acceptance checks. No store writes or paid AI calls.
+
+15 October 2026 — TikTok selected-products 2.6.1 isolated release
+- /workspace/comicrox-tiktok-selected-tests/test-selected.cjs: eight functional
+  checks, one-product and ten-product workbooks without export files; explicit
+  duplicate/packing confirmation, reused source SKUs, pending-history blocking,
+  immediate Shopify stock-change recheck, API failure preserving selection,
+  availability/format holds, reload and byte-identical saved-file redownload.
+- test-shopify.ps1: five read-only lookup checks covering title/SKU search,
+  product/admin URLs, selected IDs, invalid/duplicate/oversized requests,
+  missing products and truncated variants. No mutations or arbitrary URL fetch.
+- live-http.cjs: actual PowerShell server/OAuth/query helper/routes to browser
+  search/selection/XLSX/saved-history flow, with synthetic upstream Shopify
+  responses. New POST routes and existing /, /admin, /tiktok, JS and health
+  routes returned 200. No browser page errors.
+- Independent openpyxl validation: exact 1/10 rows, 41 columns, 13 retained
+  sheets, descriptions, prices, stock, unique SKUs and 145g packed dimensions.
+- Existing /workspace/tiktok-tab-tests/test.cjs passed with unchanged real-file
+  comparison counts (136 ready additions); pending/retry/storage guards passed.
+- Existing AI/Admin recovery suite (8 checks) and Lunar workflow suite (13
+  checks) passed. No billable AI calls or store writes.
+- 22 existing tracked files byte-identical. Main listing HTML differs only in
+  display version labels; Standard/Lunar processing and browser keys unchanged.
+Authenticated Shopify lookup on the owner's Windows machine and TikTok's
+live validation remain acceptance checks. No private fixtures/credentials ship.
