@@ -141,3 +141,52 @@ async function lunarCheckImages(){
  $('wholesaleExportStatus').textContent='Checking image links before export…';
  await Promise.all(Array.from({length:Math.min(6,urls.length)},async()=>{while(index<urls.length)await one(urls[index++]);}));
 }
+
+// Refresh a prepared forecast from the current order ledger without resaving stale active rows.
+const lunarOriginalSendPrep=sendPlannerWeekToPrep;
+sendPlannerWeekToPrep=function(key){
+ try{
+  persistActiveLunarBatch();
+  const group=pForecastGroups().find(x=>pDateISO(x.date)===key);
+  if(!group)throw Error('No upcoming forecast exists for this week. Saved work remains unchanged.');
+  const saved=savedBatchForWeek(key);
+  if(!saved){const original=pGroups;pGroups=()=>{pGroups=original;return [group];};try{return lunarOriginalSendPrep(key);}finally{pGroups=original;}}
+  const batches=loadLunarBatches(),index=batches.findIndex(b=>b.id===saved.id);
+  if(index<0)throw Error('Saved batch could not be found. No new preparation was created.');
+  const merged=mergePlannerWeekIntoSavedBatch(batches[index],group);
+  if(merged.added||merged.updated)batches[index].reviewComplete=false;
+  saveLunarBatches(batches);
+  // openSavedLunarBatch first persists the currently active rows. Detach only after
+  // saving the merge, or those pre-merge rows would overwrite the refreshed batch.
+  activeLunarBatchId=null;
+  openSavedLunarBatch(saved.id);
+  showLunarPage(wholesaleRecords.some(r=>!r.productDataMatched&&!r.excludeFromExport)?'product':'review');
+  const message='Updated saved preparation for w/c '+key+': '+merged.added+' new products added, '+merged.updated+' supplier changes refreshed, '+merged.total+' products retained. Your reviewed titles, prices, descriptions and images are preserved. Load product data for new books, then check a fresh Shopify export to download only new listings. Stock in Shopify has not been changed.';
+  $('savedBatchStatus').textContent=message;$('lunarStatus').textContent=message;$('plannerStatus').textContent=message;
+  lunarRefreshGuide();renderPlanner();
+ }catch(e){$('plannerStatus').textContent='Preparation not updated: '+e.message;}
+};
+pSendForecastWeek=function(key){sendPlannerWeekToPrep(key);};
+const lunarOriginalRenderPrepPlanner=renderPlanner;
+renderPlanner=function(){lunarOriginalRenderPrepPlanner();for(const button of document.querySelectorAll('.plannerWeekPrep'))if(savedBatchForWeek(button.dataset.week))button.textContent='UPDATE SAVED PREP — ADD NEW ITEMS';};
+renderPlanner();
+// A planner refresh can switch the working records while automatic pricing is
+// awaiting eBay. Stop the old loop cleanly rather than indexing the new batch.
+checkAllEbay=async function(auto=false){
+ if(ebayBatchRunning||!wholesaleRecords.length)return;
+ ebayBatchRunning=true;
+ const expected=wholesaleRecords,batchId=activeLunarBatchId,total=expected.length,button=$('checkAllEbay'),status=$('ebayBatchStatus');let ok=0,changed=false;
+ if(button){button.disabled=true;button.textContent='CHECKING EBAY…';}
+ try{for(let i=0;i<total;i++){
+  if(wholesaleRecords!==expected||activeLunarBatchId!==batchId){changed=true;break;}
+  if(status)status.textContent='eBay pricing: checking '+(i+1)+' / '+total+'…';
+  await checkEbayActive(i,{batch:true});
+  if(wholesaleRecords!==expected||activeLunarBatchId!==batchId){changed=true;break;}
+  if(expected[i]?.ebayActive?.ok)ok++;
+  await new Promise(resolve=>setTimeout(resolve,120));
+ }}finally{
+  ebayBatchRunning=false;
+  if(button){button.disabled=!wholesaleRecords.length;button.textContent='RECHECK ALL MARKET PRICES';}
+  if(status)status.textContent=changed?'Pricing stopped because the working batch changed. Recheck prices for the batch now open.':'eBay pricing complete: '+total+' checked · '+ok+' with usable market data'+(auto?' · automatic':'')+'.';
+ }
+};

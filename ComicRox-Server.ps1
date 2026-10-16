@@ -37,7 +37,7 @@ $listener=New-Object System.Net.HttpListener
 $listener.IgnoreWriteExceptions=$true
 $listener.Prefixes.Add("http://localhost:$Port/")
 try { $listener.Start() } catch { Write-Host "Could not start local server: $($_.Exception.Message)" -ForegroundColor Red; Log $_.Exception.ToString(); Read-Host 'Press Enter to close'; exit 1 }
-Write-Host "ComicRox Listing Tool V2.6.2 Lunar held products test running at http://localhost:$Port/" -ForegroundColor Green
+Write-Host "ComicRox Listing Tool V2.6.3 refresh saved Lunar prep test running at http://localhost:$Port/" -ForegroundColor Green
 Write-Host "Photo folder: $PhotoRoot"
 Write-Host 'KEEP THIS WINDOW OPEN while using the tool.' -ForegroundColor Yellow
 Start-Process "http://localhost:$Port/"

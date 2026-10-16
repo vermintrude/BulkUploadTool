@@ -1,0 +1,56 @@
+ComicRox 2.6.3 — update an already-prepared Lunar week
+
+WHEN YOU ADD MORE BOOKS TO AN EXISTING WEEK
+1. Import your original new/amended Order_*.csv in ORDER & PLAN.
+   Different order IDs add separate orders; repeating one does not add it
+   twice. A changed snapshot updates only that same order. Official dates
+   assign items to release weeks; dates-only CSVs do not add quantities.
+2. On the appropriate planner week, a saved preparation now displays:
+   UPDATE SAVED PREP — ADD NEW ITEMS
+   This replaces the misleading OPEN SAVED BATCH action label.
+3. Click it. The app first saves the currently open reviewed records, merges
+   supplier changes/new product codes, and reopens the refreshed preparation.
+   A status names the week and reports new/updated/retained product counts.
+   No new duplicate batch is created. Previously reviewed title, selling price,
+   description, image and other enrichment fields are preserved.
+4. New/missing product data takes you to Product Data; use START / RETRY to
+   fetch the additional books, then review them. New or changed supplier
+   records reset preparation review completion. The invoice batch is separate
+   and is not overwritten by a forecast refresh.
+5. Check a fresh ALL-products Shopify CSV before exporting. Existing SKUs are
+   reported/excluded, so only new listings go in the create CSV. Pending CSV
+   protections remain. Ready-only export/held retry from 2.6.2 is included.
+6. Import the resulting new-product CSV once, then record its import outcome.
+
+EXTRA COPIES ARE NOT NEW LISTINGS
+Refreshing an order may update the forecast/preparation quantity of an already
+listed code. It does not add or replace its stock in Shopify. Invoice alone
+is not physical receipt. Check actual receipts and adjust existing stock
+separately; never create another listing to represent extra copies.
+Rows omitted from a later forecast remain in preparation for reconciliation;
+this update does not silently delete work or infer delivery/cancellation.
+
+INSTALL
+Download the complete branch ZIP, extract it, stop the current server and keep
+old Live as Live-before-2.6.3. Copy ALL new app files into a new Live folder.
+Keep Shopify-env-dont-delete/external settings in their existing locations.
+Start START-COMICROX-TOOL.bat and Ctrl+F5 refresh your usual browser/profile at
+localhost:18789. The header should say V2.6.3 REFRESH SAVED LUNAR PREP TEST.
+Before swapping versions, use Saved Work & History -> Download Lunar Backup.
+If present, copy ComicRox-API-Usage.ndjson from the old Live for cost history;
+if absent, skip it. Do not clear browser/site data or reimport all old orders.
+Rollback: stop new server and restore old Live. Browser data is separate from
+application folders: keep a current backup before changing stored work.
+
+VALIDATION
+Isolated browser tests imported distinct official-format order snapshots into
+one release week, refreshed a saved batch that was already open, checked the
+new product/quantity and exact edited title/price/description/image, repeated
+imports and refreshes, amended one order, verified invoice batch isolation,
+checked fresh Shopify comparison excludes the original listing, and forced
+storage failure. A price-loop test switches batches during an awaited eBay
+response; the old loop stops instead of indexing or overwriting new records.
+Existing planner, Lunar invoice/export, held recovery and TikTok selected
+product tests passed. No real Shopify writes or paid AI calls in tests.
+Owner Windows installation and actual latest-order/Shopify import remain the
+acceptance checks. Unrelated Standard/TikTok/Flow logic is unchanged.
