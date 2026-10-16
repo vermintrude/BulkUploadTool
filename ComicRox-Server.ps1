@@ -28,6 +28,7 @@ function Read-Body($req){$sr=New-Object IO.StreamReader($req.InputStream,$req.Co
 . (Join-Path $Root 'ComicRox-Usage.ps1')
 . (Join-Path $Root 'ComicRox-Shopify-Flow.ps1')
 . (Join-Path $Root 'ComicRox-Shopify-Products.ps1')
+. (Join-Path $Root 'ComicRox-Price-Checker.ps1')
 
 Remove-Item -LiteralPath $LogFile -ErrorAction SilentlyContinue
 Log "Starting. Root=$Root PhotoRoot=$PhotoRoot"
@@ -67,6 +68,16 @@ while($listener.IsListening){
     if($path -eq '/ComicRox-Resume.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Resume.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Admin.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Admin.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Usage.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Usage.js'))) 'application/javascript; charset=utf-8'; continue }
+    if($path -eq '/ComicRox-Price-Checker.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Price-Checker.js'))) 'application/javascript; charset=utf-8'; continue }
+    if($path -eq '/api/admin/price-checker' -and $ctx.Request.HttpMethod -eq 'POST'){
+      try {
+        $origin=$ctx.Request.Headers['Origin']
+        if($origin -and $origin -ne ('http://localhost:'+$Port)){throw 'Open reporting from the local ComicRox Admin page.'}
+        if($ctx.Request.ContentLength64 -lt 0 -or $ctx.Request.ContentLength64 -gt 2048 -or $ctx.Request.ContentType -notmatch '^application/json'){throw 'Invalid reporting request.'}
+        try { $body=(Read-Body $ctx.Request)|ConvertFrom-Json } catch { throw 'Invalid reporting request JSON.' }
+        Send-Json $ctx (Get-ComicRoxPriceCheckerReport ([string]$body.reportKey) ([int]$body.days))
+      } catch { Send-Json $ctx @{ok=$false;error=$_.Exception.Message} 400 }; continue
+    }
     if($path -eq '/api/admin/usage' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Json $ctx (Get-ComicRoxUsage); continue }
     if($path -eq '/favicon.ico'){ Send-Bytes $ctx ([byte[]]@()) 'image/x-icon' 204; continue }
     if($path -eq '/api/health'){ Send-Json $ctx @{ok=$true;photoFolder=$PhotoRoot;photoFolderExists=(Test-Path -LiteralPath $PhotoRoot)}; continue }

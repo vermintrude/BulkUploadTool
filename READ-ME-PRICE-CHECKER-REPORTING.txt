@@ -1,0 +1,108 @@
+COMICROX 2.6.4 — PRICE CHECKER ADMIN REPORTING + TOKEN REUSE (ISOLATED TEST)
+
+What is included
+- All 2.6.3 Lunar refresh, held-retry, TikTok selected-product and existing features.
+- Admin > Price Checker: today/7/31-day searches, photo requests, errors, eBay
+  Browse/authentication calls, eBay 429s, AI tokens/exact models and estimated USD.
+- Configurable verified eBay daily Browse allowance and red warning percentage.
+- Errors and required tasks in this new view are red; success messages green.
+- Search counts measure uptake/activity, not unique customers. No visitors are
+  identified: no IPs, customer identifiers, photos, prompts or titles are stored.
+- Cloudflare D1 stores metadata, across Worker instances, atomically per request.
+- Reporting API requires a separate private reporting key, not an OpenAI/eBay key.
+- Safe in-memory eBay/Shopify OAuth token reuse (expiry margin 60s, maximum 1h,
+  up to 8 credential identities per isolate). Concurrent requests share tokens.
+  Expired/rotated credentials refresh; failed responses are not cached. A 401
+  clears token cache so the next request can obtain fresh credentials.
+- AI model and prompts, comic classification, prices and Shopify stock lookups
+  remain unchanged. Prices/stock/photo results are not cached.
+
+Install local tool (nothing here deploys the Worker)
+1. Finish the current batch, save work and download available backups.
+2. Stop the old local server. Keep old Live as a rollback folder.
+3. Extract the complete release into a new Live folder. Do not mix individual
+   files with old versions. Keep Shopify-env-dont-delete outside Live untouched.
+4. Start START-COMICROX-TOOL.bat. Keep the same browser/profile and localhost:18789.
+   Do not clear browser data. Existing saved orders, batches and history remain.
+5. Admin > Price Checker initially shows a red setup task. It cannot show live
+   figures until the separate Cloudflare setup below is finished.
+
+Build the Worker update privately on your Windows computer
+1. Save the original live worker.js from Cloudflare Edit code into a text file
+   using Notepad. Do not edit the live Worker yet.
+2. Double-click BUILD-PRICE-CHECKER-REPORTING.bat in this release. Choose that
+   original Worker file. It must exactly match the V3.0 source reviewed here
+   (apart from line endings/outer whitespace). A mismatch stops safely.
+3. A NEW dated ComicRox-Price-Checker-Reporting folder is created on Desktop:
+   worker-original.js — rollback copy; keep it.
+   worker-with-reporting.js — complete candidate Worker.
+   REPORTING-KEY-PRIVATE.txt — newly generated private 64-character reporting key.
+   Nothing is uploaded. Existing output folders are never overwritten.
+4. Keep those files private. Do not send the key in chat, commit it to GitHub,
+   or use it as a query-string parameter. Your original Worker is deliberately
+   NOT included in the public app repository; the builder applies the reviewed
+   update to your own copy locally.
+
+One-time Cloudflare setup (we can walk through it on screen)
+1. Cloudflare > Storage & databases > D1: create a database named comicrox-usage.
+2. Open its Console. Paste/run ComicRox-Price-Checker-Reporting.sql from this
+   release. CREATE IF NOT EXISTS is safe to repeat; no existing rows are deleted.
+3. Open comicrox-price-checker > Settings/Bindings > Add binding > D1 database.
+   Variable/binding name MUST be COMICROX_USAGE; choose comicrox-usage.
+4. In that Worker's Variables and Secrets add a SECRET named COMICROX_REPORT_KEY.
+   Set it to the content of REPORTING-KEY-PRIVATE.txt. Keep all existing eBay,
+   OpenAI and Shopify credentials unchanged. Do not put this value in worker.js.
+5. In Edit code, replace worker.js with the COMPLETE worker-with-reporting.js.
+   Review it, then Deploy when ready. Keep the prior deployment and original
+   source for rollback. This changes the live price checker only at deployment.
+6. In local Admin > Price Checker paste the SAME reporting key into its password
+   box and Refresh. It stays only in the open page (not local/session storage).
+   Refresh/reopen the page requires entering it again. No need to send it to us.
+7. Run one ordinary search and, if desired, one photo check on the website.
+   Wait briefly, refresh Admin and check counts. Health/preview/preflight requests
+   are excluded; a photo check and a subsequent search count as separate actions.
+8. Enter your actual eBay Browse daily allowance from eBay's developer dashboard.
+   No allowance is assumed. Authentication quota is separate. Thresholds are
+   warnings, not a hard cap. Other apps using the same eBay credentials also
+   consume allowance and are NOT measured here. UTC day may differ from the
+   provider's actual quota window; verify that window with eBay.
+9. Enter verified USD/million rates for EACH exact AI model shown, including
+   zero cached rate if appropriate. No prices are prefilled. Unknown usage/rates
+   remain explicitly unknown. Cached input is not charged twice.
+
+Scope, costs and accuracy
+- This starts collecting on deployment, not retrospectively. Workers can finish
+  recording shortly after a response, so refresh again after activity.
+- Server-side requests include repeat clicks, automated traffic and owner tests.
+  Unique visitors, returning customers and conversion are not measured.
+- eBay counts are network attempts, including failures, from THIS Worker; one
+  yearless lookup can require two Browse calls. Other applications are excluded.
+- Reporting failure never blocks customer checks. Failed writes are signalled
+  by COMICROX_REPORT_WRITE_FAILED in Cloudflare logs; resulting gaps cannot be
+  reconstructed from the dashboard. The figures are recorded usage, not a
+  guaranteed complete provider billing/quota record.
+- Token reuse reduces authentication calls and latency, but does not reduce
+  paid photo-identification token usage. No measured cash saving is promised.
+  Separate Worker instances/cold starts may each obtain their own tokens.
+- Estimated cost covers recorded AI tokens only. It excludes Cloudflare Worker,
+  D1, Shopify, eBay charges, taxes and prepaid credit balances. D1 logging uses
+  writes/read allowance too; check your Cloudflare plan and usage.
+- Metadata is retained in your D1 database; this release has no automatic purge.
+  Reports show at most 31 days. Export/back up D1 before deleting history.
+- Reporting key may be rotated by updating the Worker secret and re-entering
+  the new key in Admin. Downloaded report includes figures/settings, not the key.
+
+Validation (isolated, synthetic upstreams only)
+11 Worker/real SQLite integration checks, 8 Chromium dashboard checks,
+5 PowerShell helper checks plus parsing, 6 actual PowerShell HTTP route checks.
+Lunar refresh 6 and TikTok selected-product 8 regression checks passed.
+No production deployment, live paid API request or authenticated Windows trial
+was performed. Read TEST-EVIDENCE.txt for commands and limits.
+
+Rollback
+Local app: stop new server, restore old Live, restart on the same origin. Do not
+clear localStorage. New settings use only comicrox_price_checker_settings_v1;
+old versions ignore it. Existing workflow keys/files are not migrated.
+Worker: roll back to prior Cloudflare deployment or restore worker-original.js.
+D1 can remain bound without affecting the original Worker. Retain its data and
+private key as needed; there is no destructive database rollback step.

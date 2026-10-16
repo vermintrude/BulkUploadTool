@@ -122,3 +122,43 @@ TikTok selected-products checks passed with no browser page errors. Synthetic
 and private local fixtures only; no paid calls or Shopify writes. The separate
 workflow component changes only; main HTML/server have display-version edits.
 Windows owner installation and real new-order import remain acceptance checks.
+
+2026-10-17 — 2.6.4 Price Checker Admin / token reuse, isolated test branch
+Source: owner's uploaded Worker V3.0, SHA256 original bytes
+940cd12478001d2c94904dd033e311fe0376b5c0f73affb3103f193a731abf45.
+Original full source/private generated key are NOT published in the repo.
+Builder validates normalized source SHA256 before any change and creates new
+private output plus rollback copy. Only export wrapper and eight await-fetch
+sites are adapted; matching/model/prompt/product-result logic stays byte-equal.
+
+Executed:
+node /workspace/comicrox-price-checker-tests/test-worker.mjs — 11 passed.
+Actual V3.0 functions, mocked upstream requests, real SQLite schema/query SQL:
+health/preflight excluded, admin auth, original-vs-updated response comparison,
+2-call yearless eBay search, repeat token reuse, concurrent requests share auth,
+expiry/credential rotation/failure/missing-expiry behavior, Shopify token reuse
+without product caching, exact AI model/cached tokens, unknown AI usage/errors,
+eBay 429 counts, 30 concurrent writes with no loss, idempotent event ID,
+reporting failure leaves searches available, no private content in database,
+UTC period filtering and repeatable schema. No billable upstream calls.
+node /workspace/comicrox-price-checker-tests/test-admin.cjs — 8 checks passed.
+Chromium renders actual Admin/modules: independent tabs, key required, counters,
+cached-token prices, unknown costs, red errors/threshold/429 warnings,
+failed refresh retains prior figures, report excludes key, reload clears key
+but keeps reporting settings. No browser page errors.
+pwsh -NoProfile -File /workspace/comicrox-price-checker-tests/test-proxy.ps1
+(with the existing configured XDG paths) — 5 checks passed, parser clean.
+Fixed HTTPS destination, read-only GET, no redirect/key echo, invalid inputs,
+sanitized upstream errors; server/builder parsed using PowerShell parser.
+node /workspace/comicrox-price-checker-tests/test-http.cjs — 6 checks passed.
+Actual local PowerShell HttpListener served Admin/module and POST round trip;
+cross-origin/wrong-content-type/invalid-key rejected; log excludes key.
+Upstream Invoke-RestMethod mocked; test process stopped by test owner.
+node /workspace/comicrox-lunar-refresh-tests/test.cjs — 6 passed, no page errors.
+node /workspace/comicrox-tiktok-selected-tests/test-selected.cjs — 8 passed,
+no page errors. Full existing stock/settings/history behavior unchanged.
+
+Not tested: deployment to live Cloudflare D1/Worker, actual eBay quota balance,
+live provider billing, actual Windows/Edge trial. No provider prices or account
+allowance invented. App dashboard cannot recover missing historical telemetry.
+Only new view errors/tasks colored red; existing pages retain their styling.
