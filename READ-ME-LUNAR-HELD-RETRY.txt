@@ -1,0 +1,69 @@
+ComicRox 2.6.2 — Lunar held products and retry
+
+YOUR EDITS ARE RETAINED
+The full saved batch remains intact. Titles, selling prices and edited
+ComicRox descriptions are not removed when incomplete products are held.
+Download a Lunar backup from Saved Work & History before installing.
+
+INSTALL
+Stop the current server. Keep your old Live folder as Live-before-2.6.2.
+Extract the complete ZIP and copy all app files into a new Live folder.
+Keep Shopify-env-dont-delete and your existing external settings in place.
+Start START-COMICROX-TOOL.bat. Keep the SAME browser/profile and localhost:18789
+origin. Ctrl+F5 refresh; header should show V2.6.2 LUNAR HELD PRODUCTS & RETRY.
+If present, copy ComicRox-API-Usage.ndjson from old Live for cost history.
+If absent, skip it. Never clear browser/site data or Lunar working data.
+Rollback: stop the new server and restore the old Live folder. New held-product
+metadata is additive and remains in the existing Lunar backup/history key.
+Keep the new backup first; folder rollback does not undo browser changes.
+
+EXPORT THE READY BOOKS
+1. Open your existing prepared week through Saved Work & History.
+2. Check Shopify & Export: load a fresh Shopify ALL-products CSV and tick its
+   confirmation. Either order now works; you need not choose the file again.
+3. The page lists ready/existing/held counts and the exact reasons for holds.
+4. Download Lunar Shopify CSV still requires every new product to be ready.
+   To continue with only valid products, choose the NEW button:
+   DOWNLOAD READY ONLY — KEEP HELD FOR LATER.
+5. Confirm the counts. The tool checks public image links before export;
+   missing URLs and images that cannot load are held with a specific reason.
+   Internet problems/timeouts can also cause a hold; this does not prove a
+   supplier image has been permanently removed. Retry once accessible.
+6. Only ready new products go into the CSV. All records remain saved. An entry
+   is recorded as pending before download; the status names the exact file
+   and tells you to find it using browser Downloads (Ctrl+J).
+7. Import the generated CSV ONCE into Shopify and record its import outcome.
+   Existing products and pending CSVs retain their duplicate protections.
+
+RETRY THE HELD PRODUCTS LATER
+- A reminder appears when a Lunar batch is opened if anything is waiting.
+- Saved Work & History has a Held for later list, grouped by original batch.
+- OPEN & RETRY HELD PRODUCTS reopens that original saved batch and retries
+  official Lunar product data. Manual titles, prices and descriptions remain
+  authoritative. Missing image URLs may be filled when Lunar supplies them.
+- This is a user-started retry, not an unattended background job. A supplier
+  image cannot be invented if none is available; an exact approved image URL
+  can instead be entered manually.
+- After retry, use a fresh Shopify ALL-products CSV. Already-imported products
+  are excluded. Recovered valid products are automatically eligible again;
+  there is no permanent exclude flag to remember to undo.
+- Queue entries move out of Held when exported, while the generated file stays
+  in pending import history until its outcome is recorded.
+- Do not choose Delete saved batch: retry opens the source with its live edits.
+  Held snapshots are retained for recovery if a source batch was deleted.
+
+OTHER FEEDBACK FIXES
+The misleading LOCKED label is replaced by OPEN SAVED BATCH, LOAD SHOPIFY
+EXPORT or SHOPIFY CHECKED. Checking a file with no active batch points you to
+Saved Work & History. Exact hold reasons replace the previous combined generic
+list. No-file-created and successful-download messages are explicit.
+
+TESTING
+Isolated Chromium checks covered ready-only export, queue persistence/reload,
+recovery and new export, source records retained, owner title/price/description
+preserved, broken images, confirmation order, and storage failure preventing
+an unrecorded download. Existing Lunar, Standard export and TikTok comparison
+regressions passed. User Windows installation and actual new CSV import remain
+owner acceptance checks. No Shopify writes or paid AI calls during tests.
+Standard, TikTok, AI and Flow business logic were not changed. No live Shopify
+checkout/theme/BoomGate settings are changed by this app update.

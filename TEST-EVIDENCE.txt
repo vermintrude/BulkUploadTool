@@ -88,3 +88,21 @@ CSV import remain owner acceptance checks. No store writes or paid AI calls.
   display version labels; Standard/Lunar processing and browser keys unchanged.
 Authenticated Shopify lookup on the owner's Windows machine and TikTok's
 live validation remain acceptance checks. No private fixtures/credentials ship.
+
+16 October 2026 — Lunar held products/retry 2.6.2 isolated release
+- /workspace/comicrox-lunar-held-tests/test.cjs: eight functional checks:
+  file-before-checkbox confirmation retained, precise missing-image holds,
+  one ready CSV/two held snapshots, reload persistence, recovered images with
+  edited title/price/description retained, later checked export excludes an
+  already-imported product, actual broken image held and storage failure
+  blocks an unrecorded download while preserving prior history/manual edits.
+  An all-held batch creates no empty CSV and is retained in the retry queue.
+- Existing Lunar workflow (13 checks), Standard CSV export, TikTok full
+  comparison, TikTok selected products, and AI/Admin recovery suites passed.
+- Image fixtures return actual decodable PNGs; an explicit broken-image
+  fixture returns 404. Browser downloads independently checked for exact codes.
+- No external API calls, paid AI requests or Shopify writes during tests.
+- New Windows installation and actual CSV import remain owner acceptance.
+This release modifies the separate Lunar workflow component plus display
+version labels. TikTok, Standard processing, AI, Flow and Shopify helpers
+remain unchanged. New held state is additive under the existing backup key.
