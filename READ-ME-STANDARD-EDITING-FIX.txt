@@ -1,0 +1,34 @@
+ComicRox Standard Batch editing fix — 17 October 2026
+
+ONE FILE: ComicRox-Resume.js. Keep your current Live folder in place.
+This is a different file from the previous Lunar workflow updates.
+Do not replace ComicRox-Lunar-Workflow.js or revert the earlier invoice/focus fix.
+
+1. Save the Standard Batch using SAVE REVIEW BACKUP. Keep it privately.
+2. Close the browser tab and stop the tool's console/server.
+3. Back up ComicRox-Resume.js from your CURRENT Live folder (beside
+   START-COMICROX-TOOL.bat).
+4. Extract this ZIP and copy ONLY ComicRox-Resume.js over that existing file.
+   Do not move/rename Live, overwrite settings or clear browser/site data.
+5. Restart the same launcher and hard-refresh Ctrl+F5. Use the same browser,
+   address and port. If the Standard review is empty, click RESTORE SAVED REVIEW
+   or IMPORT REVIEW BACKUP for the batch you saved in step1. No need to rerun AI.
+6. Try typing the issue number and pressing End on a lower product card.
+
+The old Issue # handler rebuilt every Standard review card after each character.
+This removed the focused input, collapsed page content and could jump the scroll
+position to the top. Notes and grade edits had the same unnecessary rebuild.
+The fix updates related title, description and character count in place, keeping
+input nodes, focus and caret. Recovery checkpoints save each change as before.
+Rendering a Standard Batch also retains Lunar quantity/price field handlers;
+the old generic class selectors could otherwise attach Standard handlers there.
+
+19 Chromium checks passed: new issue focus/scroll/derived-field/recovery checks,
+notes/grade checks, cross-tab handler isolation and the16existing invoice/Lunar
+editing checks, including the original owner invoice. No page errors.
+No AI/provider calls, Shopify writes, stock updates, credentials or settings
+changes were performed. Windows/Edge installation remains the owner's check.
+
+Rollback: stop the tool, restore your backed-up ComicRox-Resume.js, restart the
+same launcher and hard-refresh. File rollback does not undo saved browser edits;
+keep the downloaded review backup. Existing recovery format remains version1.

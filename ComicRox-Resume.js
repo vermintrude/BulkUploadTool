@@ -16,7 +16,14 @@ function comicRoxRestore(data){
 (()=>{
  const controls=document.createElement('div');controls.style.margin='12px 0';controls.innerHTML='<button class="btn secondary" id="comicRoxDownloadRecovery">SAVE REVIEW BACKUP</button> <button class="btn secondary" id="comicRoxRestoreRecovery">RESTORE SAVED REVIEW</button> <label class="btn secondary filebtn">IMPORT REVIEW BACKUP<input id="comicRoxImportRecovery" type="file" accept=".json,application/json" style="display:none"></label><div id="comicRoxRecoveryStatus" class="mini"></div>';
  $('identify').parentElement.insertAdjacentElement('afterend',controls);
- const original=renderReviews;renderReviews=function(){const value=original();comicRoxSaveCheckpoint();comicRoxUpdateResumeButton();return value;};
+ const original=renderReviews;renderReviews=function(){
+  // Legacy renderReviews attaches generic class handlers document-wide. Keep
+  // the Lunar inputs' own handlers when rendering a Standard Batch review.
+  const lunarInputs=[...document.querySelectorAll('#wholesaleRows input[data-wi], #wholesaleRows textarea[data-wi]')].map(el=>[el,el.oninput]);
+  const value=original();
+  for(const [el,handler] of lunarInputs)if(el.isConnected)el.oninput=handler;
+  comicRoxBindStableEditors();comicRoxSaveCheckpoint();comicRoxUpdateResumeButton();return value;
+ };
  $('reviews').addEventListener('input',()=>queueMicrotask(comicRoxSaveCheckpoint));
  $('comicRoxDownloadRecovery').onclick=()=>{if(!records.length){$('comicRoxRecoveryStatus').textContent='No current review to back up.';return;}dl(new Blob([JSON.stringify({version:1,savedAt:new Date().toISOString(),records},null,2)],{type:'application/json'}),'ComicRox-AI-Recovery.json');};
  $('comicRoxRestoreRecovery').onclick=()=>{try{const text=localStorage.getItem(comicRoxRecoveryKey);if(!text)throw Error('No saved review checkpoint in this browser.');comicRoxRestore(JSON.parse(text));}catch(e){$('comicRoxRecoveryStatus').textContent=e.message;}};
@@ -24,3 +31,26 @@ function comicRoxRestore(data){
  let hasCheckpoint=false;try{hasCheckpoint=!!localStorage.getItem(comicRoxRecoveryKey);}catch{}
  if(hasCheckpoint)$('comicRoxRecoveryStatus').textContent='A saved review checkpoint is available. Restore it only if it is the batch you intend to continue.';
 })();
+
+// Editing issue/notes/grade must not rebuild the review list on every keypress.
+// Update derived fields in place, leaving the current input and caret intact.
+function comicRoxBindStableEditors(){
+ const reviews=$('reviews');
+ for(const kind of ['issue','notes','grade'])for(const input of reviews.querySelectorAll('.'+kind+'[data-i]')){
+  input.oninput=()=>{
+   const index=Number(input.dataset.i),record=records[index];if(!record)return;
+   record[kind]=input.value;
+   if(kind==='issue')updateIssue(index);
+   else if(record.aiBaseTitle){
+    record.title=titleWithNote(record.aiBaseTitle,record.notes,record.grade);
+    record.description=descriptionWithNote((record.description||'').split(/\n\nKey \/ listing note:|\n\nCondition:/)[0],record.notes,record.grade);
+   }
+   const card=input.closest('.review');
+   const title=card?.querySelector('input.title'),description=card?.querySelector('textarea.description');
+   if(title)title.value=record.title||'';
+   if(description)description.value=record.description||'';
+   const count=card?.querySelector('.chars');if(count)count.textContent=String(record.title||'').length+'/80';
+   summary();comicRoxSaveCheckpoint();
+  };
+ }
+}

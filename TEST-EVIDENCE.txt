@@ -205,3 +205,14 @@ render immediately; deferred updates flush when focus leaves table controls.
 Same Downloads contents do not restart pricing; manual retries remain available.
 Targeted follow-up also dispatches window focus with unmatched product data.
 One-file cumulative update, no HTML/server/settings/Shopify changes.
+
+2026-10-17 — Standard Batch issue editing repair
+Original Issue # input handler calls updateIssue then renderReviews on every
+character; notes/grade do likewise. Rebuilding all cards loses focus and page
+scroll position. Resume module now binds those handlers to update derived fields
+in place and checkpoint without rebuilding. Standard render also preserves the
+Lunar input handlers from the legacy generic document-wide class binding.
+19 Chromium tests passed, 0 failed/skipped: issue typing/End/scroll/DOM identity,
+title/description/recovery updates, notes/grade, Lunar cross-tab isolation and
+all16previous invoice/Lunar focus checks. No page errors or live provider calls.
+Only ComicRox-Resume.js needs replacement on owner's computer; Lunar fixes stay.
