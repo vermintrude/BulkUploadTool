@@ -1,0 +1,47 @@
+ComicRox Lunar editing/focus fix — 17 October 2026
+
+ONE FILE TO REPLACE. KEEP YOUR EXISTING LIVE FOLDER IN PLACE.
+This update includes the earlier split-cost invoice fix; do not install an older
+invoice-only file over it. Existing invoice imports/batches remain saved.
+
+1. Save your work and download a Lunar backup in Saved Work & History.
+2. Close the tool browser tab and stop its server/console.
+3. Find ComicRox-Lunar-Workflow.js in your CURRENT working Live folder, beside
+   START-COMICROX-TOOL.bat. Keep a copy of that existing JS file for rollback.
+4. Copy ONLY ComicRox-Lunar-Workflow.js from this ZIP over that existing file.
+   Do not move/rename the Live folder, replace settings, or clear browser data.
+5. Restart the same START-COMICROX-TOOL.bat. Use the same browser/address/port.
+   Hard-refresh with Ctrl+F5.
+6. Open the saved invoice/batch and continue editing. Do not reimport an invoice
+   to install this update. The already imported Invoice 959031 stays saved.
+
+FIXED
+- Automatic eBay checks previously rebuilt every table input twice per product,
+  removing the focused field and making End act on the page instead of the title.
+- While you edit, original input/textarea nodes are retained, including caret,
+  selection, typed values and composition state. Market-price cells can update
+  without replacing those controls. Remaining row refreshes wait until editing
+  ends. Moving directly between editable fields does not trigger a rebuild.
+- Returning to the tool window previously reapplied an unchanged downloaded
+  product-data CSV and restarted pricing. Last applied file content is now
+  remembered per batch for this page session. Automatic checks skip unchanged
+  content; changed files and explicit manual retries still work.
+- Downloads responses for a batch you have since switched away from are ignored.
+
+The earlier invoice fix remains: same-code split discount lines retain original
+quantities/costs and an exact total, with a blended per-unit cost. Identical whole
+invoice imports reopen without adding quantities; amendments/conflicts still stop.
+No Shopify listing, stock, settings or checkout changes are made by this update.
+
+VERIFIED
+16 Chromium tests passed, including typing and selections in title/price/quantity/
+image/description, background sequential pricing, End-key behavior, field-to-field
+focus, deferred refresh after leaving inputs, batch switching, unchanged Downloads
+checks and manual retry, plus all seven invoice regression checks and the actual
+owner invoice. A further targeted check exercises the real window-focus listener.
+No live provider calls or Shopify writes. Windows/Edge installation is the owner's
+final check. Existing local Node browser suite: tests/lunar-invoice.test.mjs.
+
+ROLLBACK
+Stop the tool, restore your saved JS file, restart the same launcher, hard-refresh.
+Keep private Lunar backups. Replacing a JS file does not undo browser-state edits.

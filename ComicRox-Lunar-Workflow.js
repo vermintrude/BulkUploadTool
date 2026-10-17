@@ -243,3 +243,71 @@ checkAllEbay=async function(auto=false){
   if(status)status.textContent=changed?'Pricing stopped because the working batch changed. Recheck prices for the batch now open.':'eBay pricing complete: '+total+' checked · '+ok+' with usable market data'+(auto?' · automatic':'')+'.';
  }
 };
+
+// Background price/product-data responses must not rebuild controls under the
+// user's cursor. Keep the editor node (including selection/IME) until focus
+// leaves the table; update only the non-editable market cells in the meantime.
+const lunarOriginalRenderWholesale=renderWholesale;
+let lunarRenderedRecords=wholesaleRecords,lunarRenderedBatchId=activeLunarBatchId;
+let lunarRenderPending=false;
+function lunarWholesaleEditor(){
+ const el=document.activeElement;
+ return el?.matches('#wholesaleRows input[data-wi], #wholesaleRows textarea[data-wi]')?el:null;
+}
+function lunarRefreshMarketCells(){
+ const rows=$('wholesaleRows')?.querySelectorAll(':scope > tr:not(.wdescrow)')||[];
+ rows.forEach((row,i)=>{
+  const record=wholesaleRecords[i];if(!record)return;
+  const cells=[...row.querySelectorAll(':scope > .ebayCell')];
+  if(cells.length!==3)return;
+  const holder=document.createElement('tr');holder.innerHTML=ebayCellsHtml(record,i);
+  const next=[...holder.children];
+  cells.forEach((cell,j)=>cell.replaceWith(next[j]));
+ });
+ renderWholesalePriceModeOnly();
+}
+renderWholesale=function(){
+ const sameBatch=lunarRenderedRecords===wholesaleRecords&&lunarRenderedBatchId===activeLunarBatchId;
+ if(sameBatch&&lunarWholesaleEditor()){
+  lunarRenderPending=true;lunarRefreshMarketCells();wholesaleSummary();return;
+ }
+ lunarRenderPending=false;
+ lunarOriginalRenderWholesale();
+ lunarRenderedRecords=wholesaleRecords;lunarRenderedBatchId=activeLunarBatchId;
+};
+$('wholesaleRows').addEventListener('focusout',()=>{
+ // Wait until the next control has focus; moving between fields must not redraw.
+ setTimeout(()=>{if(lunarRenderPending&&!lunarWholesaleEditor())renderWholesale();},0);
+});
+
+// Returning to this window used to reapply the same Downloads CSV and restart
+// pricing each time. Remember the last applied content per batch in memory.
+const lunarAppliedProductFiles=new Map();
+const lunarOriginalPreparedProductData=applyLunarProductDataText;
+applyLunarProductDataText=function(text,name){
+ const result=lunarOriginalPreparedProductData(text,name);
+ lunarAppliedProductFiles.set(activeLunarBatchId||wholesaleRecords,text);
+ return result;
+};
+let lunarDownloadCheckBusy=false;
+checkLatestDownloadedLunarData=async function(manual=false){
+ if(!wholesaleRecords.length||lunarDownloadCheckBusy)return false;
+ const expected=wholesaleRecords,batchId=activeLunarBatchId,key=batchId||expected;
+ lunarDownloadCheckBusy=true;
+ try{
+  if(manual)$('reviewProductDataStatus').textContent='Checking your Downloads folder for the latest Lunar Product Data CSV…';
+  const response=await fetch('/api/lunar-latest-product-data?since='+encodeURIComponent(lunarAutoStarted||0));
+  const data=await response.json();
+  if(wholesaleRecords!==expected||activeLunarBatchId!==batchId)return false;
+  if(data.ok&&data.found&&data.text){
+   if(!manual&&lunarAppliedProductFiles.get(key)===data.text)return false;
+   const result=applyLunarProductDataText(data.text,data.name||'Lunar Product Data CSV');
+   $('autoLunarState').textContent='✓ Review populated';
+   $('reviewProductDataStatus').textContent+=' Auto-detected from Downloads ('+result.matched+'/'+wholesaleRecords.length+' matched).';
+   return true;
+  }
+  if(manual)$('reviewProductDataStatus').textContent='No new Lunar Product Data CSV was found in Downloads. Use IMPORT PRODUCT DATA CSV to select it manually.';
+ }catch(error){if(manual&&wholesaleRecords===expected)$('reviewProductDataStatus').textContent='Could not check Downloads: '+error.message;}
+ finally{lunarDownloadCheckBusy=false;}
+ return false;
+};

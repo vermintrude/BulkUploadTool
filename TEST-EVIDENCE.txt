@@ -192,3 +192,16 @@ Shopify existing-SKU exclusion and pending CSV protections verified in Chromium.
 ZIP integrity checked and packaged JS byte-compared to tested source.
 No Shopify writes or Windows installation performed. Private business CSVs are
 not included in repository, ZIP or test fixtures.
+
+2026-10-17 — Lunar editing/focus repair
+Confirmed original checkEbayActive calls renderWholesale before/after each eBay
+request; full-table innerHTML replacement removes focused controls. Unchanged
+Downloads CSV also reapplied on window focus, restarting automatic pricing.
+16 Chromium checks passed, zero failures/skips, including all invoice guards and
+actual owner invoice. Original editor nodes/caret/selection retained through real
+sequential asynchronous price fetches; title End key and subsequent typing work.
+Title, price, quantity, image and description edits persist; new batch switches
+render immediately; deferred updates flush when focus leaves table controls.
+Same Downloads contents do not restart pricing; manual retries remain available.
+Targeted follow-up also dispatches window focus with unmatched product data.
+One-file cumulative update, no HTML/server/settings/Shopify changes.
