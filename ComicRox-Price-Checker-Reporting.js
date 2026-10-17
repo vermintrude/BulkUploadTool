@@ -4,8 +4,13 @@
  */
 // Per-Worker-instance token reuse only. No customer responses or images cached.
 // Credentials are included in a hash so secret rotation cannot reuse an old token.
+// Cache plain JSON text and numeric expiry ONLY. Workers response streams are
+// request-owned and MUST NEVER be cached or shared across request contexts.
 const pcTokenCache = new Map();
 const pcTokenPending = new Map();
+const pcTokenResponse = snapshot => new Response(snapshot.text, {
+  status: snapshot.status, headers: snapshot.headers
+});
 async function pcTrackedFetch(env, input, init) {
   const url = new URL(input instanceof Request ? input.url : String(input));
   const tokenRequest = (init?.method || 'GET').toUpperCase() === 'POST' && (
@@ -16,26 +21,29 @@ async function pcTrackedFetch(env, input, init) {
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(url.href+'\n'+auth+'\n'+String(init?.body || '')));
   const key = Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2,'0')).join('');
   const cached = pcTokenCache.get(key);
-  if (cached && cached.expires > Date.now()) return cached.response.clone();
+  if (cached && cached.expires > Date.now()) return pcTokenResponse(cached);
   pcTokenCache.delete(key);
-  if (pcTokenPending.has(key)) return (await pcTokenPending.get(key)).clone();
+  if (pcTokenPending.has(key)) return pcTokenResponse(await pcTokenPending.get(key));
   const pending = (async () => {
     const issuedAt = Date.now();
     const response = await pcRecordedFetch(env, input, init);
+    // Consume inside the originating request; downstream gets a NEW Response.
+    const snapshot = {text: await response.text(), status: response.status,
+      headers: Array.from(response.headers.entries()), expires: 0};
     if (response.ok) {
       try {
-        const data = await response.clone().json(), seconds = Number(data.expires_in);
+        const data = JSON.parse(snapshot.text), seconds = Number(data.expires_in);
         if (typeof data.access_token === 'string' && data.access_token && Number.isFinite(seconds) && seconds > 120) {
-          // Bound memory and retain only safe expiry-backed credentials.
+          snapshot.expires = issuedAt + Math.min(seconds-60,3600)*1000;
           if (pcTokenCache.size >= 8) pcTokenCache.delete(pcTokenCache.keys().next().value);
-          pcTokenCache.set(key,{response: response.clone(), expires: issuedAt + Math.min(seconds-60,3600)*1000});
+          pcTokenCache.set(key,snapshot);
         }
-      } catch { /* No valid expiry means no reuse on the next lookup. */ }
+      } catch { /* Failed/malformed/missing-expiry responses are never retained. */ }
     }
-    return response;
+    return snapshot;
   })();
   pcTokenPending.set(key,pending);
-  try {return (await pending).clone();} finally {pcTokenPending.delete(key);}
+  try {return pcTokenResponse(await pending);} finally {pcTokenPending.delete(key);}
 }
 
 async function pcRecordedFetch(env, input, init) {
@@ -72,7 +80,8 @@ async function pcRecordedFetch(env, input, init) {
 }
 function pcReportJson(data, status = 200) {
   return new Response(JSON.stringify(data), {status, headers: {
-    'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store'
+    'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store',
+    'X-ComicRox-Monitoring': '3.0.1'
   }});
 }
 async function pcAuthorized(request, env) {
@@ -119,10 +128,16 @@ async function pcReport(request, env) {
 }
 async function pcSaveEvent(env, event) {
   if (!env.COMICROX_USAGE) return;
-  await env.COMICROX_USAGE.prepare(`INSERT OR IGNORE INTO pc_usage
+  const result = await env.COMICROX_USAGE.prepare(`INSERT OR IGNORE INTO pc_usage
     (id,at,kind,status,duration_ms,ebay_browse,ebay_auth,ebay_429,ai)
     VALUES (?,?,?,?,?,?,?,?,?)`).bind(event.id, event.at, event.kind, event.status,
       event.durationMs, event.ebayBrowse, event.ebayAuth, event.ebay429, JSON.stringify(event.ai)).run();
+  if (result?.success === false) throw Error('report-write-failed');
+}
+function pcVersionResponse(response) {
+  const headers = new Headers(response.headers);
+  headers.set('X-ComicRox-Monitoring', '3.0.1');
+  return new Response(response.body, {status: response.status, statusText: response.statusText, headers});
 }
 export default {
   async fetch(request, env, ctx) {
@@ -131,14 +146,14 @@ export default {
     const kind = url.searchParams.get('shopifytest') === '1' ? null :
       url.pathname === '/identify' && request.method === 'POST' ? 'photo' :
       url.pathname !== '/identify' && request.method === 'GET' && url.searchParams.get('title') ? 'search' : null;
-    if (!kind) return comicRoxChecker.fetch(request, env);
+    if (!kind) return pcVersionResponse(await comicRoxChecker.fetch(request, env));
     const event = {id: crypto.randomUUID(), at: new Date().toISOString(), kind,
       status: 500, durationMs: 0, ebayBrowse: 0, ebayAuth: 0, ebay429: 0, ai: []};
     const started = Date.now();
     try {
       const response = await comicRoxChecker.fetch(request, {...env, __comicRoxUsage: event});
       event.status = response.status;
-      return response;
+      return pcVersionResponse(response);
     } finally {
       event.durationMs = Date.now() - started;
       // Fail open: a reporting outage must not break customer checks.

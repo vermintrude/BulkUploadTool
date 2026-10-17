@@ -162,3 +162,20 @@ Not tested: deployment to live Cloudflare D1/Worker, actual eBay quota balance,
 live provider billing, actual Windows/Edge trial. No provider prices or account
 allowance invented. App dashboard cannot recover missing historical telemetry.
 Only new view errors/tasks colored red; existing pages retain their styling.
+
+2026-10-17 — 2.6.5 monitor-runtime correction (following owner rollback)
+Prior 2.6.4 Worker was NOT production-safe: token cache stored Response streams
+and Node mocks missed Cloudflare's request ownership restriction. Actual workerd
+reproduction: first search200, second500 Cannot perform I/O on behalf of a
+different request, third500 ReadableStream locked. Original restored by owner.
+Now cache contains only plain text/header strings/status/expiry, not Response
+objects. Each requesting context constructs a new Response. Pending shared auth
+promises resolve plain snapshots. Original comic matching/model/prompts unchanged.
+Source module copied from private price-checker fix/monitoring-runtime branch.
+Actual workerd+D1 tests and Chromium actual-dashboard integration now verify
+repeated/sequential/concurrent contexts, real report aggregation, cached-token
+pricing/unknown costs, outage fail-open, auth errors/no-expiry/401, UTC filters,
+privacy, and a regression guard that detects the old cross-request stream defect.
+The existing installed2.6.4 Admin UI works with this corrected Worker; local app
+replacement is optional. No Cloudflare production deployment or live billing
+verification performed. Secure CLOUDFLARE_API_TOKEN still missing in environment.

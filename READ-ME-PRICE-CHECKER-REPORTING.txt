@@ -1,4 +1,16 @@
-COMICROX 2.6.4 — PRICE CHECKER ADMIN REPORTING + TOKEN REUSE (ISOLATED TEST)
+COMICROX 2.6.5 — PRICE CHECKER REPORTING RUNTIME FIX (ISOLATED TEST)
+
+IMPORTANT: The prior 2.6.4 Worker builder generated an unsafe Response cache.
+It broke repeated live searches in Cloudflare; the owner restored the original.
+The Admin view/local proxy itself worked. This release fixes the builder to
+cache PLAIN TEXT rather than cross-request Response streams. It has now been
+tested in the actual Cloudflare Workers runtime (workerd), plus D1 and Admin.
+Existing 2.6.4 local Admin installations do not need replacing to use the fixed
+Worker. Prefer the private price-checker repository for subsequent development:
+vermintrude/comicrox-price-checker, branch fix/monitoring-runtime.
+No live deployment has been performed by this fix. Cloudflare credentials are
+still required. Do not reuse a Worker built by the old 2.6.4 builder.
+
 
 What is included
 - All 2.6.3 Lunar refresh, held-retry, TikTok selected-product and existing features.
@@ -93,7 +105,8 @@ Scope, costs and accuracy
   the new key in Admin. Downloaded report includes figures/settings, not the key.
 
 Validation (isolated, synthetic upstreams only)
-11 Worker/real SQLite integration checks, 8 Chromium dashboard checks,
+12 workerd/D1/dashboard checks in the private repository, plus
+11 legacy Worker/real SQLite integration checks, 8 Chromium dashboard checks,
 5 PowerShell helper checks plus parsing, 6 actual PowerShell HTTP route checks.
 Lunar refresh 6 and TikTok selected-product 8 regression checks passed.
 No production deployment, live paid API request or authenticated Windows trial
