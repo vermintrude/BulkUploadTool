@@ -179,3 +179,16 @@ privacy, and a regression guard that detects the old cross-request stream defect
 The existing installed2.6.4 Admin UI works with this corrected Worker; local app
 replacement is optional. No Cloudflare production deployment or live billing
 verification performed. Secure CLOUDFLARE_API_TOKEN still missing in environment.
+
+2026-10-17 — split-cost invoice repair
+node --check ComicRox-Lunar-Workflow.js — passed.
+COMICROX_PRIVATE_INVOICE=<private original invoice path> node --test
+  --test-concurrency=1 tests/lunar-invoice.test.mjs — 7 passed, 0 failed/skipped.
+Actual original invoice: 50 lines / 49 products / 203 units; one merged code,
+original split costs and exact total retained. Eight matching prepared records
+for w/c19October preserve owner fields when importing across release weeks.
+Sequential repeat/amendment, reload, conflicts, invalid adjustments/totals,
+Shopify existing-SKU exclusion and pending CSV protections verified in Chromium.
+ZIP integrity checked and packaged JS byte-compared to tested source.
+No Shopify writes or Windows installation performed. Private business CSVs are
+not included in repository, ZIP or test fixtures.

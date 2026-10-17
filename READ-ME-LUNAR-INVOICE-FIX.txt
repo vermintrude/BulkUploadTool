@@ -1,0 +1,56 @@
+ComicRox — Lunar split-cost invoice fix — 17 October 2026
+
+This is a one-file update for the existing guided Lunar Batch tool.
+It does not require a new Live folder or a new installation.
+
+INSTALL
+1. In the current tool, save any edits and download a Lunar backup from
+   Saved Work & History. Keep it privately on your computer.
+2. Close the tool's browser tab and stop its console/server window.
+3. In your existing Live folder (where START-COMICROX-TOOL.bat lives), copy
+   ComicRox-Lunar-Workflow.js somewhere safe as a rollback copy.
+4. Copy ComicRox-Lunar-Workflow.js from this ZIP into that SAME Live folder,
+   replacing the existing file. Do not move/delete other files or settings.
+5. Start the same START-COMICROX-TOOL.bat and hard-refresh with Ctrl+F5.
+   Use the same localhost address/port/browser profile as before, so saved
+   work and history stay available. Do not clear browser/site data.
+
+IMPORT
+Use INVOICE — WHEN RECEIVED with the original Invoice_959031.csv.
+Expected: 49 products / 203 units from 50 invoice lines; one split-line product.
+Batman Adventures #12 Facsimile 0125DC242: 3 copies at $1.8753 plus 2 copies at
+$1.9950 = 5 copies / $9.6159 total, blended unit cost $1.92318.
+Open the Split invoice costs details in the guide to inspect original lines.
+The original file must not be edited to remove a line or merge costs manually.
+
+Saved preparation is retained by Lunar code, including reviewed titles,
+selling prices, descriptions and images from earlier weeks. Invoice quantities,
+costs, UPC and release dates come from the invoice. Preparation batches remain
+separate. Product data/images/prices still need review before export.
+
+An identical invoice reopens its saved batch without adding quantities.
+A changed invoice with the same number still stops for amendment review.
+Conflicting repeated-code identities, exact repeated lines, negative adjustments
+and inconsistent line totals remain blocked before invoice state is changed.
+All original supplier cost lines and exact totals are retained in saved records,
+cost snapshots and Lunar backups. Only blended per-unit costs may need rounding
+to eight decimals; original line totals remain exact decimal strings.
+
+No Shopify listings, stock or orders are changed by importing this invoice.
+A fresh FULL Shopify export is still required before downloading new products.
+Existing Shopify SKUs and pending CSV safeguards remain. Invoice means billed,
+not proof of physical receipt and not an instruction to add stock.
+
+ROLLBACK
+Stop the tool and replace only ComicRox-Lunar-Workflow.js with your saved copy,
+then restart the same launcher and hard-refresh. Keep current Lunar backups;
+reverting a JS file does not rewind browser edits. Existing saved batches retain
+their original formats; new invoice line details are additional record fields.
+
+VERIFICATION
+7 Chromium tests passed, including actual owner invoice, split-cost precision,
+identity/adjustment guards with unchanged storage on failure, repeat/amendment,
+reload persistence, prepared-field preservation across release weeks, Shopify
+SKU exclusion and pending-export protection. No page errors. No live Shopify
+writes, paid AI calls, order changes or credential changes. Windows/Edge install
+and original invoice import remain the owner's final check.
