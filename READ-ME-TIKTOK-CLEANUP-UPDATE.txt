@@ -1,0 +1,32 @@
+ComicRox TikTok cleanup and import-result update — 20 October 2026
+
+PURPOSE
+Make TikTok reflect Shopify availability: first stop existing unavailable listings, then add genuinely missing available products. The additions workbook alone never cleans up existing TikTok listings.
+
+INSTALL
+1. Click Download TikTok Sync backup. Keep the JSON and a copy of your existing ComicRox-TikTok.js.
+2. Extract this ZIP. Replace ONLY ComicRox-TikTok.js in the same folder your running tool uses.
+3. Return to the SAME browser/tool address and press Ctrl+F5. Do not clear browser data. Saved identity decisions and import runs retain their existing storage key.
+Includes previous matching/dropdown improvements and the new outcome feedback. No HTML replacement required.
+
+YOUR ALREADY-IMPORTED 108 PRODUCTS
+Do not upload their additions workbook again. TikTok's result confirmed all108 imported. Select that existing108-row run and paste its original seller_sku values into Record successful SKUs. The message now appears beneath the buttons and identifies unmatched SKUs instead of hiding the error near the top of the page. Valid outcomes persist across reloads; no source exports are needed just to record this result.
+
+CLEAN UP EXISTING TIKTOK LISTINGS
+1. Load fresh full Shopify and TikTok status exports, choosing the correct status for each TikTok file. Confirm completeness. Use fresh exports after sales and after your108-product import. Source uploads are not retained across refreshes.
+2. Compare. Existing saved identity choices are reused. Resolve remaining matches only when confident. Unknown matches are excluded from cleanup.
+3. Review Remove / zero-stock checklist. It contains confirmed matches where Shopify stock is zero/negative, or Shopify is archived/unpublished. Archived/unpublished products are treated as withdrawn even if their recorded stock is positive: check that this matches your intention.
+4. In Clean up existing TikTok listings, check the review confirmation and click Download TikTok cleanup bulk-edit file.
+5. The file retains TikTok's existing product/SKU IDs and uses the original bulk-edit template. It sets target variant quantity to0. It sets product_status to Deactivated(2) only when ALL exported variants of that product are confirmed unavailable. Mixed-availability products keep their existing status and only the unavailable variant is zeroed. Existing Failed/Deactivated/Draft source rows are not included as Live cleanup targets.
+6. Import via TikTok's bulk EDIT workflow (Bulk actions > Edit products), NOT the Upload in bulk CREATE route used for additions. If several original workbooks are needed, the tool downloads a ZIP; extract and import each XLSX. Follow TikTok's validation/result screen. The review workbook is not an import file.
+7. Check TikTok's import result, then load fresh exports and compare to verify the listings are stopped. A download alone changes nothing. Cleanup is not recorded as a successful additions run because it updates existing IDs rather than creating products.
+8. Separately create an additions workbook for new eligible products only. The already-imported108 rows remain blocked by their saved pending/successful history. Existing stock/price differences remain a review checklist; this update does not automate those adjustments.
+
+LIMITS
+This is a manual bulk-file workflow, not a live platform integration. Sales on eBay/Whatnot are detected only if reflected in the Shopify data loaded here. It cannot infer a sale from another platform if Shopify still says available. Unknown identities must be checked separately. No products are changed automatically by the local tool.
+
+VALIDATION
+Four Chromium browser regression checks passed: dropdown and saved identity mapping; zero/negative stock and duplicate groups; successful/failed outcome validation and persistence; actual downloaded cleanup workbook parsed back to verify exact19-digit IDs, quantity0, Deactivated(2) for fully unavailable products, active status retained for mixed-stock products, original descriptions preserved and unrelated/uncertain products excluded. TikTok's original export confirms Deactivated(2) is a supported product-status dropdown value. This structural/browser verification is not a claim that a cleanup workbook has already been imported into TikTok.
+
+SCREEN ORDER
+The update adds an order-of-work guide and labels Step4 as stopping unavailable listings, Step5 as additions and Step6 as recording additions results. A short click-by-click cleanup instruction appears in Step4. For today's108 already-imported additions, do not repeat Step5: concentrate on Step4 cleanup and Step6 recording the existing run.
