@@ -50,6 +50,18 @@ test('zero and negative Shopify stock cannot become TikTok additions, including 
   return {additions,removed:existing.removed.map(x=>({handle:x.s.handle,reason:x.reason})),confirmedRemoved:confirmed.removed.map(x=>x.s.handle),direct};
  });
  assert.deepEqual(checks.additions,['available']);assert.equal(checks.removed[0].handle,'sold');assert.match(checks.removed[0].reason,/zero or negative/);assert.deepEqual(checks.confirmedRemoved,['sold']);assert.deepEqual(checks.direct.map(x=>[x.qty,x.eligible,x.added]),[[0,false,0],[-1,false,0],[2,true,1]]);
+ const matching=await page.evaluate(()=>{
+ const a=window.ComicRoxTikTokTest,state=a.getState(),base={title:'Harley Quinn Scientist CGC 9.9 Artist Alley',key:'a|',handle:'a',sku:'',qty:0,price:150,eligible:false,status:'archived',published:'false'};
+ const t={product_id:'100',sku_id:'200',product_name:base.title,price:'150',quantity:'0',seller_sku:''};
+ const b={...base,key:'b|',handle:'b',qty:1},wrong={...base,key:'wrong|',handle:'wrong',title:'Harley Quinn #53 CGC 9.8 Artist Alley',qty:1,eligible:true,status:'active',published:'true'};
+ const grouped=a.compare([base,b,wrong],[t],state),mixed=a.compare([base,{...b,eligible:true,status:'active',published:'true'},wrong],[t],state);
+ const mappedState={...state,links:{'100|200':'b|'}},mapped=a.compare([base,{...b,eligible:true,status:'active',published:'true'},wrong],[t],mappedState);
+ const conflictTitles=['Nectar #1 CGC 9.8 2026 Cover A','Nectar #3 CGC 9.9 2026 Cover A','Nectar #1 CGC 9.9 2025 Cover A','Nectar #1 CGC 9.9 2026 Cover B'];
+ const conflictT={...t,product_name:'Nectar #1 CGC 9.9 2026 Cover A',seller_sku:'reused'};
+ const conflicts=a.compare(conflictTitles.map((title,i)=>({...base,title,key:'c'+i,handle:'c'+i,sku:'reused'})),[conflictT],state);
+ return {groupedReview:grouped.review.length,groupedHandles:grouped.removed[0].duplicateHandles,mixedCandidates:mixed.review[0].candidates.map(x=>x.handle),mappedReview:mapped.review.length,mappedProposed:mapped.proposed.map(x=>x.handle),conflicts:conflicts.review[0].candidates.length};
+ });
+ assert.equal(matching.groupedReview,0);assert.deepEqual(matching.groupedHandles,['a','b']);assert.deepEqual(matching.mixedCandidates,['a','b']);assert.equal(matching.mappedReview,0);assert(!matching.mappedProposed.includes('a'));assert(!matching.mappedProposed.includes('b'));assert.equal(matching.conflicts,0);
  if(process.env.COMICROX_PRIVATE_SHOPIFY){const csv=fs.readFileSync(process.env.COMICROX_PRIVATE_SHOPIFY,'utf8');const evidence=await page.evaluate(csv=>{const a=window.ComicRoxTikTokTest,ss=a.shopRows(csv),r=a.stage(a.compare(ss,[],a.getState()));return {variants:ss.length,zero:ss.filter(s=>s.qty===0).length,nonpositiveInAdditions:r.add.filter(x=>x.s.qty<=0).length,example:ss.filter(s=>s.handle==='batman-death-and-the-maidens-1-9-2003-dc-comics-full-set-all-nm').map(s=>({qty:s.qty,eligible:s.eligible}))};},csv);assert.equal(evidence.nonpositiveInAdditions,0);assert(evidence.zero>0);assert(evidence.example.every(x=>x.qty===0&&!x.eligible));console.log('Private Shopify export stock check:',JSON.stringify(evidence));}
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 });

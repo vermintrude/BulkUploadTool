@@ -1,0 +1,23 @@
+ComicRox TikTok matching improvement — 20 October 2026
+
+WHAT CHANGED
+- Exact-title Shopify candidates take precedence over weaker shared-word suggestions. A different Harley Quinn issue no longer appears alongside exact Scientist-title matches.
+- Suggestions with explicitly conflicting issue numbers, grading company/CGC grades, publication years or cover letters are excluded.
+- When several exact-title Shopify records are ALL unavailable (archived, unpublished or zero stock), their TikTok listing goes directly to the remove/zero-stock checklist. This groups the same safe action; it does not merge Shopify records or select a stocked record. All handles are included in the checklist.
+- If records disagree about availability, manual review remains necessary.
+- When a saved/manual match resolves an exact-title duplicate, the other exact-title records are blocked from new additions too. They cannot be recreated simply because another duplicate was selected.
+- The earlier dropdown stability fix and comparison details are included.
+
+INSTALL
+1. Click Download TikTok Sync backup and retain the JSON file.
+2. Keep a backup copy of your current ComicRox-TikTok.js.
+3. Extract this ZIP and replace ONLY ComicRox-TikTok.js in the existing running tool folder.
+4. Return to the SAME browser/tool address and press Ctrl+F5.
+5. Reload your Shopify and TikTok exports, including the corrected 75-row file in place of the old _2.xlsx. Confirm the relevant coverage and packing and run Compare exports again.
+6. Previously confirmed identity matches remain saved under the same browser storage key; do not clear site data. Source export uploads must be loaded again after refresh. Restore your JSON backup only if needed.
+
+Use fresh exports after sales. No listing is changed automatically; remove/update checklists still require action on TikTok. Zero/negative Shopify stock remains excluded from additions.
+
+VALIDATION
+Chromium regression checks cover dropdown selection and persisted confirmation, zero/negative stock, inactive products, grouped unavailable duplicates, mixed-availability records staying manual, saved matches blocking duplicate additions, and explicit issue/grade/year/cover conflicts.
+Against the supplied exports with no saved decisions: review rows 87 to 81; candidate suggestions 187 to 104; six unavailable duplicate groups resolved. Both Harley Quinn Scientist and Nightmare on Elm Street groups are included. Your own counts differ after your saved confirmations. No zero-stock product entered proposed additions. No private source exports are included in this patch.
