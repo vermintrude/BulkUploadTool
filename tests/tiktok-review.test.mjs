@@ -32,3 +32,24 @@ test('identity review retains dropdown, shows both identities, and saves only a 
  await page.reload();assert.equal(await page.evaluate(()=>window.ComicRoxTikTokTest.getState().links['123456789|987654321']),'stand-a|Multi');
  }finally{await browser.close();await new Promise(r=>server.close(r));}
 });
+
+test('zero and negative Shopify stock cannot become TikTok additions, including confirmed sold matches',async()=>{
+ const server=http.createServer((req,res)=>{const p=path.join(root,req.url.split('?')[0]);if(!p.startsWith(root+path.sep)||!fs.existsSync(p)){res.writeHead(404);res.end();return;}res.setHeader('Content-Type',p.endsWith('.js')?'text/javascript':p.endsWith('.html')?'text/html':'application/octet-stream');res.end(fs.readFileSync(p));});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
+ try{const page=await browser.newPage();await page.goto('http://127.0.0.1:'+server.address().port+'/ComicRox-TikTok.html');
+ const checks=await page.evaluate(()=>{
+  const api=window.ComicRoxTikTokTest,h=['Handle','Title','Published','Status','Variant Price','Variant Inventory Qty','Variant SKU','Variant Grams','Image Src'];
+  const data=[['available','Available comic','true','active',5,2,'a',100,'https://example.com/a.jpg'],['sold','Sold comic','true','active',5,0,'b',100,'https://example.com/b.jpg'],['negative','Negative stock','true','active',5,-1,'c',100,'https://example.com/c.jpg'],['archived','Archived comic','true','archived',5,1,'d',100,'https://example.com/d.jpg'],['unpublished','Unpublished comic','false','active',5,1,'e',100,'https://example.com/e.jpg']];
+  const ss=api.shopRows([h,...data].map(r=>r.join(',')).join('\n')),state=api.getState();
+  const additions=api.stage(api.compare(ss,[],state)).add.map(x=>x.s.handle);
+  const t={product_id:'123',sku_id:'456',product_name:'Sold comic',quantity:'1',price:'5',seller_sku:'b',sourceStatus:'Live'};
+  const existing=api.stage(api.compare(ss,[t],state));
+  const altered={...t,product_name:'Renamed sold listing'};state.links['123|456']='sold|';
+  const confirmed=api.stage(api.compare(ss,[altered],state));
+  const direct=[0,-1,2].map(qty=>{const p={id:'p',handle:'selected',title:'Selected comic',status:'ACTIVE',onlineStoreUrl:'https://example.com/product',images:{nodes:[{url:'https://example.com/image.jpg'}]},variants:{nodes:[{id:'v',price:'5',inventoryQuantity:qty,selectedOptions:[{value:'Default Title'}]}]}};const rows=api.directRows(p);return {qty,eligible:rows[0].eligible,added:api.stage({proposed:rows,prior:new Map()}).add.length};});
+  return {additions,removed:existing.removed.map(x=>({handle:x.s.handle,reason:x.reason})),confirmedRemoved:confirmed.removed.map(x=>x.s.handle),direct};
+ });
+ assert.deepEqual(checks.additions,['available']);assert.equal(checks.removed[0].handle,'sold');assert.match(checks.removed[0].reason,/zero or negative/);assert.deepEqual(checks.confirmedRemoved,['sold']);assert.deepEqual(checks.direct.map(x=>[x.qty,x.eligible,x.added]),[[0,false,0],[-1,false,0],[2,true,1]]);
+ if(process.env.COMICROX_PRIVATE_SHOPIFY){const csv=fs.readFileSync(process.env.COMICROX_PRIVATE_SHOPIFY,'utf8');const evidence=await page.evaluate(csv=>{const a=window.ComicRoxTikTokTest,ss=a.shopRows(csv),r=a.stage(a.compare(ss,[],a.getState()));return {variants:ss.length,zero:ss.filter(s=>s.qty===0).length,nonpositiveInAdditions:r.add.filter(x=>x.s.qty<=0).length,example:ss.filter(s=>s.handle==='batman-death-and-the-maidens-1-9-2003-dc-comics-full-set-all-nm').map(s=>({qty:s.qty,eligible:s.eligible}))};},csv);assert.equal(evidence.nonpositiveInAdditions,0);assert(evidence.zero>0);assert(evidence.example.every(x=>x.qty===0&&!x.eligible));console.log('Private Shopify export stock check:',JSON.stringify(evidence));}
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+});

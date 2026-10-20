@@ -28,3 +28,8 @@ Browser XLSX/ZIP/CSV processing and workbook integrity tested in cloud Chromium;
 
 LOCAL DOWNLOADS
 Generated and review files download through the browser while local server running. Browser Downloads Ctrl+J shows them. They do not use the chat's failing cloud file service. The release ZIP is distributed separately on GitHub with CODE/BLANK TEMPLATE ONLY, no product exports/credentials/checklists. Third-party ZIP library JSZip3.10.1 included locally under MIT license; no external runtime CDN dependency.
+
+STOCK CHECK VERIFIED — 20 October 2026
+Shopify CSV products are eligible for additions only when active, published and stock is greater than zero. Zero/negative stock products stay in the comparison so existing matching TikTok listings can be flagged for removal/zero stock. Do not delete sold Shopify records just to exclude them from additions. If identity is uncertain, confirm the exact match before acting on the TikTok listing.
+The selected-products route also excludes zero/negative stock and rechecks current Shopify details before file generation. Export-based comparison uses the snapshot in the loaded CSV; reload a fresh export after subsequent sales.
+Browser checks cover positive/zero/negative stock, archived/unpublished products, exact and manually confirmed sold matches, and selected-product intake. The supplied 20 October export contained 1,581 variants including 106 at zero stock; no nonpositive-stock variant entered additions. No application change or replacement download was necessary for this stock rule.
