@@ -1,14 +1,14 @@
 COMICROX OBS BANNERS — START HERE
 
-RECOMMENDED: banner.html — static logo, 960 wide × 160 high.
-Your five messages change every 7 seconds. Requests Welcome has its own slide.
+RECOMMENDED: banner.html — static logo, 960 wide × 180 high.
+Your six messages change every 7 seconds. Requests Welcome has its own slide.
 
 FIRST SETUP IN OBS
 1. Right-click this ZIP > Extract All. Keep the extracted folder somewhere permanent, such as Documents > ComicRox OBS Banners. Do not select an HTML file still inside the ZIP.
 2. In OBS, choose your live-show scene.
 3. Sources > + > Browser > Create new. Name it ComicRox Banner.
 4. Tick Local file and select banner.html from the extracted folder.
-5. Set Width: 960 and Height: 160. Leave the usual transparent Browser Source background.
+5. Set Width: 960 and Height: 180. Leave the usual transparent Browser Source background.
 6. Click OK. Move ComicRox Banner ABOVE your camera source in the Sources list.
 7. Drag it into position, resize with a corner handle to keep its proportions, then click the padlock.
 8. Hide your old scrolling-text source with its eye icon. No Scroll filter is needed on the new source.
@@ -17,7 +17,7 @@ FIRST SETUP IN OBS
 
 OTHER VERSIONS — PICK ONE
 banner-wide.html: static logo, Width 1600 / Height 180, for landscape scenes.
-banner-blue-ring.html: animated blue-ring logo, Width 960 / Height 160. Silent loop.
+banner-blue-ring.html: animated blue-ring logo, Width 960 / Height 180. Silent loop.
 Use the matching dimensions in the source properties. You do not need all versions on screen together.
 
 CHANGE MESSAGES
@@ -30,14 +30,15 @@ CHANGE MESSAGES
 7. Check the new messages. Preview edits alone do not update OBS until you save/replace the file and refresh it.
 
 YOUR STARTING MESSAGES
-CGCs • NEW RELEASES • BACK ISSUES
+CGCs & NEW RELEASES
+BACK ISSUES
 SETS & RUNS
 REQUESTS WELCOME
 LET’S HAVE SOME FUN!
 WWW.COMICROX.CO.UK
 
 LOGO
-The default static image is a still of your supplied blue-ring clip. The animated option uses a small, silent WebM conversion of that clip. No logo has been redrawn in this pack.
+The default static image isolates the green/white lettering from your supplied clip with the blue ring removed. The animated option uses a small, silent WebM conversion of that clip.
 To use your original PNG/JPG instead, open Edit messages.html > Use a different logo image, choose it, then save the banner.
 
 NOTES
@@ -45,3 +46,6 @@ Each banner HTML is self-contained and works offline. No account, subscription, 
 Preview PNGs show the design; add the HTML file to OBS for rotating text.
 Nothing changes your scenes automatically. Keep the old scroll source hidden as a fallback.
 Browser verification passed for rotation, text fit, silent animated playback, editor validation and reopened downloaded files with no external requests. This is not a claim of testing inside your Windows OBS; follow the setup steps to check it there.
+
+UPDATING FROM THE FIRST BANNER
+Replace the old banner.html with this new banner.html, open the existing Browser Source properties and set Height to 180 (Width stays960), then refresh the source. Keep its existing position and check the slightly deeper banner fits the scene. The green captions are now twice as large.
