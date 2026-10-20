@@ -16,3 +16,26 @@ interprets these as new/current files. Defer this UI change to a future release.
   do not hide them or weaken duplicate-export/partial-import safeguards.
 
 Status: requested for future release; no application behavior changed.
+
+## OBS banner editor inside Admin — requested 20 October 2026
+
+Owner wants the standalone Edit messages.html tool integrated into the batch
+listing tool's Admin screen in the next release, keeping controls in one place.
+Defer implementation until that release; the current standalone editor remains usable.
+
+- Add an OBS Banner Editor entry in Admin with the existing rotating-banner preview,
+  one-message-per-line editing, green supporting captions, timing, compact/wide sizes,
+  clean static logo by default and optional animated blue-ring logo/custom image.
+- Preserve the existing self-contained OBS HTML format and 960 × 180 compact default.
+- Make saving unambiguous: show which file needs replacing, where OBS points,
+  and how to refresh it; avoid repeated Downloads copies named banner (1).html.
+- Investigate a user-configured, explicitly selected OBS output folder/file so the
+  local app can update that same banner safely, rather than assuming filesystem access.
+  Browser-only fallback must clearly explain downloading/replacing the existing file.
+- Keep preview changes distinct from saved OBS changes; show save success/errors
+  beside the controls. Preserve custom messages/settings across app restarts.
+- Explain that different OBS Scene Collections need separate Browser Sources but can
+  all reference the same output HTML file. Do not modify OBS scenes automatically.
+- Reuse the source in obs-banner/ and retain an export/backup path for standalone use.
+
+Status: recorded for the next release; no Admin integration implemented yet.
