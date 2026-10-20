@@ -1,0 +1,17 @@
+ComicRox TikTok import-result feedback — 20 October 2026
+
+Record successful SKUs now displays validation errors directly below the outcome buttons instead of only near the top of the page. It names up to five unmatched Seller SKUs and gives the total count. If any SKU does not belong to the selected run, no outcomes are changed. This preserves the protection against recording the wrong upload.
+Successful saves show the run's pending/successful/released counts locally, preserve the selected run, tolerate quoted Excel values/BOM, and deduplicate pasted SKUs. Cancelling a release gives a local message. Confirmed successful products cannot be released for recreation.
+Includes the prior matching, zero-stock and dropdown improvements. No products are changed on Shopify or TikTok.
+
+INSTALL
+1. Download TikTok Sync backup first. Save a copy of the pasted Seller SKUs if desired.
+2. Back up the existing ComicRox-TikTok.js in your running tool folder.
+3. Extract this ZIP and replace ONLY ComicRox-TikTok.js in that same folder.
+4. Return to the same browser/tool address and press Ctrl+F5. Do not clear browser storage.
+5. Import runs and confirmed mappings remain saved. You do NOT need to reload source exports or generate another workbook just to record an existing run's result.
+6. Select the existing 108-row run, paste the seller_sku values from its original additions workbook and click Record successful SKUs.
+7. Read the message immediately underneath the buttons. If it lists mismatches, check those entries against the selected run's original workbook. Do not release this successful run or upload it again.
+
+TESTED
+Three Chromium browser regression checks passed. They cover candidate dropdown/persistence, zero/negative stock and duplicate matching, and outcome recording: mixed valid/unknown SKU list makes no changes; valid pasted values persist after reload; duplicate/quoted values accepted; selected older run retained; successful rows cannot be released. Private uploads are not included in this patch.
