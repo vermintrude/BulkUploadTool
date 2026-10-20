@@ -1,0 +1,34 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);
+const {chromium}=require(require.resolve('playwright',{paths:['/workspace/comicrox-price-checker']}));
+const root=path.resolve(new URL('..',import.meta.url).pathname);
+test('identity review retains dropdown, shows both identities, and saves only a confirmed candidate',async()=>{
+ const server=http.createServer((req,res)=>{const p=path.join(root,req.url.split('?')[0]);if(!p.startsWith(root+path.sep)||!fs.existsSync(p)){res.writeHead(404);res.end();return;}res.setHeader('Content-Type',p.endsWith('.js')?'text/javascript':p.endsWith('.html')?'text/html':'application/octet-stream');res.end(fs.readFileSync(p));});
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
+ try{const page=await browser.newPage();await page.goto('http://127.0.0.1:'+server.address().port+'/ComicRox-TikTok.html');
+ const headers=['Handle','Title','Published','Status','Variant Price','Variant Inventory Qty','Variant SKU','Variant Grams','Image Src','Option1 Value'];
+ const rows=[['stand-a','Comic Stands Made to Order','TRUE','active','8','1','reused','100','https://example.com/a.jpg','Multi'],['stand-b','Comic Stands Made to Order','FALSE','archived','12','0','reused','100','https://example.com/b.jpg','Multi']];
+ await page.locator('#shopFile').setInputFiles({name:'shop.csv',mimeType:'text/csv',buffer:Buffer.from([headers,...rows].map(r=>r.map(s=>'"'+s+'"').join(',')).join('\n'))});
+ await page.waitForFunction(()=>document.querySelector('#shopStatus').textContent.includes('2 variants'));
+ const bytes=await page.evaluate(async()=>{const z=new JSZip(),n='http://schemas.openxmlformats.org/spreadsheetml/2006/main',r='http://schemas.openxmlformats.org/officeDocument/2006/relationships';z.file('xl/workbook.xml',`<workbook xmlns="${n}" xmlns:r="${r}"><sheets><sheet name="Template" sheetId="1" r:id="rId1"/></sheets></workbook>`);z.file('xl/_rels/workbook.xml.rels','<Relationships><Relationship Id="rId1" Target="worksheets/sheet1.xml"/></Relationships>');const rows=[['product_id','product_name','seller_sku','quantity','price','sku_id'],[],[],[],[],['123456789','Comic Stands (Made to Order) Now available','reused','1','8','987654321']];z.file('xl/worksheets/sheet1.xml',`<worksheet xmlns="${n}"><sheetData>`+rows.map((row,i)=>`<row r="${i+1}">`+row.map((v,j)=>`<c r="${String.fromCharCode(65+j)}${i+1}" t="inlineStr"><is><t>${v}</t></is></c>`).join('')+'</row>').join('')+'</sheetData></worksheet>');return Array.from(await z.generateAsync({type:'uint8array'}));});
+ await page.locator('#ttFiles').setInputFiles({name:'tiktok.xlsx',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',buffer:Buffer.from(bytes)});
+ await page.waitForFunction(()=>document.querySelector('#sources').textContent.includes('1 rows'));
+ await page.locator('#run').click();await page.waitForFunction(()=>window.ComicRoxTikTokTest.getResult()?.review.length===1);
+ await page.locator('#view').selectOption('review');const select=page.locator('[data-link="0"]'),button=page.locator('[data-confirm="0"]');assert(await button.isDisabled());
+ await select.evaluate(el=>{window.originalReviewSelect=el;el.dispatchEvent(new MouseEvent('click',{bubbles:true}));});await page.waitForTimeout(100);
+ assert(await select.evaluate(el=>el===window.originalReviewSelect),'Click must not replace the dropdown');
+ await select.selectOption('stand-b|Multi');assert.equal(await select.inputValue(),'stand-b|Multi');assert(await button.isEnabled());
+ const details=await page.locator('[data-comparison="0"]').textContent();assert(details.includes('TikTok:'));assert(details.includes('Shopify:'));assert(details.includes('stand-b'));assert(details.includes('archived'));assert(details.includes('Stock: 0'));
+ await select.selectOption('');assert(await button.isDisabled());await select.selectOption('stand-a|Multi');
+ page.once('dialog',d=>d.dismiss());await button.click();await page.waitForTimeout(100);assert.deepEqual(await page.evaluate(()=>window.ComicRoxTikTokTest.getState().links),{});
+ await page.locator('[data-link="0"]').selectOption('stand-a|Multi');let message='';page.once('dialog',d=>{message=d.message();return d.accept();});await page.locator('[data-confirm="0"]').click();
+ await page.waitForFunction(()=>window.ComicRoxTikTokTest.getState().links['123456789|987654321']==='stand-a|Multi');assert(message.includes('TikTok:'));assert(message.includes('Shopify:'));assert(message.includes('stand-a'));
+ assert.equal(await page.evaluate(()=>window.ComicRoxTikTokTest.getResult().review.length),0);
+ await page.reload();assert.equal(await page.evaluate(()=>window.ComicRoxTikTokTest.getState().links['123456789|987654321']),'stand-a|Multi');
+ }finally{await browser.close();await new Promise(r=>server.close(r));}
+});

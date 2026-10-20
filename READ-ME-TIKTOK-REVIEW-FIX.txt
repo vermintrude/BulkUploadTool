@@ -1,0 +1,18 @@
+ComicRox TikTok identity-review fix — 20 October 2026
+
+Fixes a click handler that disabled and rebuilt the results table when opening a candidate dropdown. Only actual action buttons now start an action. Candidate selection updates the comparison details without rebuilding the table.
+
+The review action now displays the selected Shopify product alongside the TikTok listing, including title, SKU, variant/handle, price, stock, status and publication state. Confirm remains disabled until you choose a candidate. The confirmation dialog identifies both products, and a successful match is saved to this browser's TikTok Sync settings.
+
+INSTALL
+1. In TikTok Sync, click Download TikTok Sync backup and keep the JSON file.
+2. Stop using the review page while replacing the file. Keep a copy of your existing ComicRox-TikTok.js as a backup.
+3. Extract this ZIP. Replace ONLY ComicRox-TikTok.js in the same folder that your running ComicRox tool uses. Do not start a second copy of the app in a new folder.
+4. Return to the same TikTok Sync page and press Ctrl+F5.
+5. Reload your Shopify CSV and TikTok exports with their correct source statuses; source files are not saved across refreshes. Use the corrected 75-row export in place of the original _2.xlsx, alongside the original 670-row export and the other status export. Confirm coverage and packing, then Compare exports.
+6. Select Check identity manually. Choose the Shopify candidate, read both products' details, then Confirm same product only when they are the same physical edition/variant/grade. Leave genuinely uncertain matches unresolved.
+
+Existing saved mappings/history and other tool data retain their original storage key. If settings are missing, restore the JSON backup in the same tool. This patch does not change listings on TikTok or Shopify.
+
+VALIDATION
+Real Chromium browser regression check: dropdown click retains its DOM node and selection; details distinguish same-title products by handle/status/stock; no selection disables confirmation; cancel saves no mapping; accepted confirmation records the exact candidate, removes the resolved review row and survives reload.
