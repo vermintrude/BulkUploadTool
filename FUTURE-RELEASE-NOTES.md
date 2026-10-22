@@ -39,3 +39,23 @@ Defer implementation until that release; the current standalone editor remains u
 - Reuse the source in obs-banner/ and retain an export/backup path for standalone use.
 
 Status: recorded for the next release; no Admin integration implemented yet.
+
+## Website search: explain no results before alternatives — requested 22 October 2026
+
+Owner requests this for the next website work session, not an immediate deployment.
+Currently a no-match search can show alternative products without telling the
+customer that the requested search found nothing.
+
+- When the product search has zero results, show a prominent message such as:
+  “No results found for your search. Here are some other comics you might like.”
+- Put the message before the recommended/alternative products and make clear
+  those products are suggestions, not matches to the original query.
+- If no suggestions exist, show a helpful no-results message without promising
+  recommendations; let the customer edit their search.
+- Apply to the relevant full-search and predictive-search experiences on mobile
+  and desktop, checking each actual no-results path. This is storefront product
+  search, not the separate eBay comic-price lookup.
+- Keep successful search results unchanged and do not display no-results copy
+  while a search is still loading or has failed technically.
+
+Status: saved for the next website update; not implemented or published.
