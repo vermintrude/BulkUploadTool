@@ -1,0 +1,17 @@
+COMICROX — EBAY MARKET PERCENTILE FIX
+26 October 2026
+
+The server only defined Percentile inside the 5-or-more-comparables condition, but called it for every median. A fresh server handling1-4 comparable listings therefore failed with the PowerShell message shown in the eBay Market column. The helper is now defined unconditionally before the outlier branch. The percentile arithmetic, matching, IQR filtering and response fields are unchanged.
+
+INSTALL
+1. Save/download your current review/Lunar backup as a precaution.
+2. Stop the running ComicRox server by closing its PowerShell server window.
+3. Keep a backup copy of ComicRox-Server.ps1 in your existing live tool folder.
+4. Extract this ZIP and replace ONLY ComicRox-Server.ps1 in that same folder.
+5. Restart using your normal ComicRox launcher. Refresh the browser with Ctrl+F5.
+6. Open your saved Lunar batch and click CHECK EBAY on affected rows to retry failed checks. Do not recreate or reimport the invoice just for this fix. If a saved row still shows the old error, its fresh check must finish before the message changes.
+
+The patch does not alter product data, manual selling prices, Shopify stock, credentials or existing backups. Keep the original script to roll back if required.
+
+VALIDATION
+Diff checked: only the function placement and explanatory comment changed. An optional PowerShell regression script is included in the repository at tests/ebay-percentile.test.ps1: it parses actual server syntax and evaluates actual pricing code in fresh scopes for1/2/3/4/5 comparable listings plus an outlier case. PowerShell is not installed in this cloud environment, so that runtime test has NOT been executed here. Confirm a fresh CHECK EBAY succeeds after restarting your Windows server.

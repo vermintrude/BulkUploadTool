@@ -244,14 +244,15 @@ while($listener.IsListening){
         # Robust outlier removal. Active eBay searches can contain collector-priced mistakes,
         # slabs or special listings even after title filtering. Use Tukey's IQR fences when
         # there are enough comps, then use the MEDIAN as the main market benchmark.
+        # Median is required for every non-empty result, not only 5+ comps.
+        function Percentile([object[]]$a,[double]$p){
+          if($a.Count -eq 1){return [double]$a[0]}
+          $pos=($a.Count-1)*$p;$lo=[math]::Floor($pos);$hi=[math]::Ceiling($pos)
+          if($lo -eq $hi){return [double]$a[$lo]}
+          return ([double]$a[$lo] + (([double]$a[$hi]-[double]$a[$lo])*($pos-$lo)))
+        }
         $used=$vals
         if($vals.Count -ge 5){
-          function Percentile([object[]]$a,[double]$p){
-            if($a.Count -eq 1){return [double]$a[0]}
-            $pos=($a.Count-1)*$p;$lo=[math]::Floor($pos);$hi=[math]::Ceiling($pos)
-            if($lo -eq $hi){return [double]$a[$lo]}
-            return ([double]$a[$lo] + (([double]$a[$hi]-[double]$a[$lo])*($pos-$lo)))
-          }
           $q1=Percentile $vals 0.25;$q3=Percentile $vals 0.75;$iqr=$q3-$q1
           if($iqr -gt 0){
             $lower=[math]::Max(0.01,$q1-(1.5*$iqr));$upper=$q3+(1.5*$iqr)
