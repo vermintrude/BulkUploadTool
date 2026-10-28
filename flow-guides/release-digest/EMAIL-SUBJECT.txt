@@ -1,0 +1,1 @@
+ComicRox release list: {{ getProductData | size }} products to check

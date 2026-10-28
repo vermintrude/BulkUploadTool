@@ -1,0 +1,30 @@
+COMICROX — ONE DAILY RELEASE EMAIL
+Prepared from Release Pre-Orders on Release Date (1).flow, supplied28 October2026.
+These are setup instructions and email templates, NOT an importable .flow file.
+No workflow has been changed or activated by these files.
+
+WHAT THE EXPORT CONFIRMS
+Scheduled run:02:30 Europe/London daily. An old one-off14 October run is also in the export; leave the schedule unchanged for this email-only change.
+Get product data selects tag:Pre-Order with custom.release_date on/before the run date, maximum100 products. It includes overdue products, not only items released on that calendar date.
+The existing email is below Send Admin API request(2), inside the product loop. This is why you receive one per product.
+Send Admin API request(3) is OUTSIDE the loop. It records the query count in the shop's reporting metafield. Use its output for the single email branch.
+
+SAFE EDIT — KEEP YOUR RELEASE ACTIONS
+1. In Shopify Flow, duplicate the current Release Pre-Orders on Release Date workflow. Keep the original running and the duplicate OFF while editing. Retain the original export as a backup.
+2. Name the duplicate Release Pre-Orders on Release Date — Single Email.
+3. In the duplicate, remove ONLY the existing Send internal email at the bottom of the product loop. Keep Remove product tags, Add product tags and ALL four Send Admin API request actions exactly as supplied.
+4. Find Send Admin API request(3), the standalone branch directly after Get product data. It must stay OUTSIDE For each.
+5. From that action's output, add a condition requiring the Get product data list to contain at least one product. Depending on the editor, use list-not-empty/count-greater-than-zero, or at least one list item's ID being nonempty. If unsure about the actual condition UI, stop and show that screen; do not guess or substitute a per-item condition inside the loop.
+6. On the condition's TRUE branch, add Send internal email. To:steve@comicrox.co.uk. Paste EMAIL-SUBJECT.txt into Subject and EMAIL-MESSAGE.txt into Message.
+7. The email uses getProductData (the whole list), not getProductDataForeachitem. Confirm the editor accepts those variables. Keep the condition's false branch empty so days with no due products send no email.
+8. Review/test the duplicate in Shopify using its preview/test facilities if available. Do not run the real product mutations against live products just to test the email. Verify: one email action, outside the product loop; one row per selected product; existing release branches intact; no email when the list is empty.
+9. At changeover, turn OFF the original first, then turn ON the edited duplicate. Never leave both active together, as both would perform release actions.
+10. Check the first scheduled run: one digest, correct selected-product count, and the product/tag/description reporting actions successful. To roll back, turn OFF the duplicate and turn ON the original.
+
+IMPORTANT TIMING DISTINCTION
+The standalone email branch runs alongside the product loop. It summarizes the products SELECTED for that run; it cannot certify each individual mutation succeeded. The wording explicitly says this and asks you to check the run. It does not claim every book is ready to ship. A true successful-updates-only digest would need completion/reporting data and is a separate change.
+
+CURRENT LIMIT
+The original query fetches at most100 products per run. The digest warns if it reaches100; it does not silently promise a complete list beyond that limit. Raising this limit/pagination is not part of this email-only change.
+
+Your release date rules, title/description cleanup, product tags, reporting metafields and schedule remain unchanged. No stock quantity, product status or physical-receipt setting is altered by this email setup.

@@ -1,0 +1,23 @@
+{% assign releaseCount = getProductData | size %}
+COMICROX — RELEASE CHECKLIST
+Run date: {{ scheduledAt | date: "%d %B %Y" }}
+
+{{ releaseCount }} pre-order product(s) were selected for this release-date run.
+This is the run's selected list, not confirmation that every update succeeded or that stock has arrived. Check the workflow run for errors before acting.
+{% if releaseCount == 100 %}
+ATTENTION: This query reached its 100-product limit. More products may be due; check the remaining pre-orders and the workflow run.
+{% endif %}
+{% for product in getProductData %}
+----------------------------------------
+{{ forloop.index }}. {{ product.title }}
+{% if product.onlineStoreUrl != blank %}Shopify: {{ product.onlineStoreUrl }}{% endif %}
+Product ID: {{ product.id }}
+{% endfor %}
+----------------------------------------
+NEXT STEPS — FOR THE WHOLE LIST
+1. Check this Flow run completed successfully and the products have moved from Pre-Order to New Release.
+2. Confirm the stock has physically arrived. A release date or invoice does not prove receipt.
+3. For received products, find the matching edition/variant in Crosslist. Check title, price, quantity and condition.
+4. Publish to eBay and Whatnot, leaving Shopify unticked if it is already listed there.
+
+If stock has not arrived, wait before publishing elsewhere. An inactive/draft product may not have a public Shopify link; use its product record in Shopify.
