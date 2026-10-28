@@ -1,0 +1,58 @@
+COMICROX — LUNAR RELEASE-DATE FIX — 28 OCTOBER 2026
+
+INSTALL
+1. In the current app, Saved Work & History -> DOWNLOAD LUNAR BACKUP.
+2. Back up the existing ComicRox-Lunar-Workflow.js in your LIVE tool folder.
+3. Copy the supplied ComicRox-Lunar-Workflow.js into that same folder,
+   replacing that file only. Keep all other files, including your edited HTML.
+4. Reload the tool with Ctrl+F5. Keep the same address/browser and folder so
+   your saved work remains available. Do not clear browser storage.
+
+WHY THIS IS NEEDED
+Refreshing a Lunar date in the local app does not change Shopify. The old
+new-product export deliberately skips SKUs already in Shopify. The overnight
+Shopify Flow therefore continued using the original dates.
+
+NEW ROUTINE — AFTER EVERY LUNAR DATE / PRODUCT DATA REFRESH
+1. Import current Lunar dates (or refresh Product Data for the products).
+   Fresh dates now update all saved occurrences of a code, preserving quantities,
+   reviewed titles, prices, descriptions and original invoice-line audit records.
+2. Export ALL Shopify products, including draft and archived products, with
+   the custom.release_date metafield. Load this in CHECK SHOPIFY & EXPORT and
+   confirm the ALL products checkbox.
+3. Click CHECK RELEASE-DATE CHANGES. It checks all saved batches, not just
+   the open week. Review the dates shown. Conflicting/ambiguous records are held
+   for review; refresh their Lunar dates rather than guessing.
+4. Click DOWNLOAD SHOPIFY RELEASE-DATE UPDATES.
+5. In Shopify Products -> Import, select the downloaded update CSV and enable
+   "Overwrite products with matching handles". Review the import preview.
+   Do not enable any option to publish products to additional sales channels.
+6. Import BEFORE the nightly release Flow runs. The download itself changes
+   nothing in Shopify. Importing a new-product CSV alone does not apply updates.
+7. Export Shopify products again, load the fresh export and run the check again
+   to verify the corrections. Downloads invalidate the previous check.
+
+ALREADY RELEASED TOO EARLY?
+Keep the release Flow off while correcting the affected listings. For future
+release dates the update restores the PRE-ORDER title suffix, the generated
+notice and Pre-Order tag, removes New Release, and corrects the release-date
+metafield and generated Release Date detail. Existing owner copy is retained.
+Past/today date corrections do not automatically change release classification.
+Check the corrected listings before turning the release Flow back on.
+
+WHAT THIS DOES NOT DO
+The CSV contains only Handle, Title, Body (HTML), Tags and the release-date
+metafield. No inventory, price, status, publication, image or variant columns
+are supplied. It does not prove physical receipt, change stock, place orders,
+or connect the local app automatically to Shopify. It does not change Flow.
+A date-based Flow can still release stock that has not arrived; confirm physical
+receipt before publishing to eBay/Whatnot. Local dates must be refreshed regularly.
+Use a fresh Shopify export and import promptly so newer copy/tag edits are not
+replaced by the older snapshot. Review special/custom preorder notices manually.
+
+VALIDATION
+Browser regression tests cover delayed-product corrections, repeat checks,
+ambiguous SKUs, conflicting/missing dates, preservation of owner copy and
+quantities, omitted inventory/price fields, stale preview protection, downloaded
+CSV contents, and synchronisation of date imports and Product Data across batches.
+No live Shopify import or Windows installation has been performed here.

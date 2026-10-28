@@ -311,3 +311,137 @@ checkLatestDownloadedLunarData=async function(manual=false){
  finally{lunarDownloadCheckBusy=false;}
  return false;
 };
+
+
+// Revised release dates are a separate, reviewed update to existing Shopify products.
+// Never include inventory, prices, status, variants or publication fields in this CSV.
+let lunarDateShopifySnapshot=null;
+const lunarDateMasterOriginal=lunarSaveMaster;
+lunarSaveMaster=function(text,name){
+ lunarDateShopifySnapshot=null;
+ const result=lunarDateMasterOriginal(text,name);
+ lunarDateShopifySnapshot={text,name,at:Date.now()};
+ return result;
+};
+function lunarDateToday(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+function lunarDateSources(){
+ const sources=new Map(),add=(code,date,source,observedAt='')=>{
+  code=String(code||'').trim().toUpperCase();date=lunarISO(date);
+  if(!/^\d{4}[A-Z]{2}\d+$/.test(code)||!date)return;
+  if(!sources.has(code))sources.set(code,[]);
+  sources.get(code).push({date,source,observedAt});
+ };
+ for(const b of loadLunarBatches())for(const r of b.records||[])add(r.code,r.release,b.invoiceId?'Invoice '+b.invoiceId:'Saved batch '+b.weekKey,r.releaseDateObservedAt);
+ for(const r of wholesaleRecords)add(r.code,r.release,'Open batch',r.releaseDateObservedAt);
+ for(const [code,d]of Object.entries(pReadDateCache()))add(code,d.iso,d.source||'Imported Lunar dates',d.importedAt);
+ // Legacy order records are a fallback only; refreshed prep dates take precedence.
+ for(const [id,order]of Object.entries(pReadOrders().orders))for(const r of order.items||[])if(!sources.has(String(r.code).toUpperCase()))add(r.code,r.instore,'Order '+id);
+ return sources;
+}
+function lunarResolveReleaseDates(sources){
+ const resolved=new Map(),conflicts=[];
+ for(const [code,items]of sources){
+  const observed=items.filter(x=>Number.isFinite(Date.parse(x.observedAt)));
+  const newest=observed.length?Math.max(...observed.map(x=>Date.parse(x.observedAt))):null;
+  const candidates=newest===null?items:observed.filter(x=>Date.parse(x.observedAt)===newest);
+  const dates=[...new Set(candidates.map(x=>x.date))];
+  if(observed.length&&items.some(x=>!Number.isFinite(Date.parse(x.observedAt))&&x.date!==dates[0])){conflicts.push({code,reason:'Saved dates disagree with imported dates. Refresh Lunar dates or Product Data to resolve.'});continue;}
+  // Without dated source evidence, conflicting legacy snapshots need a fresh lookup.
+  if(dates.length!==1){conflicts.push({code,reason:'Conflicting saved dates: '+dates.join(', ')+'. Import fresh Lunar dates or Product Data.'});continue;}
+  resolved.set(code,{date:dates[0],source:candidates.filter(x=>x.date===dates[0]).map(x=>x.source).join('; ')});
+ }
+ return {resolved,conflicts};
+}
+function lunarBuildDateUpdates(text,sources,today=lunarDateToday()){
+ const rows=parseCsv(text.replace(/^\uFEFF/,'')),h=rows[0]||[],ix=n=>h.indexOf(n);
+ const dateHeader=h.find(n=>/\(product\.metafields\.custom\.release_date\)$/.test(n));
+ for(const n of ['Handle','Title','Body (HTML)','Tags','Variant SKU'])if(ix(n)<0)throw Error('Shopify export is missing '+n+'. Export ALL products again.');
+ if(!dateHeader)throw Error('Shopify export is missing the custom.release_date metafield. Include it in a fresh product export.');
+ const products=new Map(),bySku=new Map();let current=null;
+ for(const row of rows.slice(1)){
+  const handle=String(row[ix('Handle')]||'').trim();if(!handle)continue;
+  if(!products.has(handle))products.set(handle,{handle,skus:new Set(),definitions:[]});
+  current=products.get(handle);
+  if(row[ix('Title')])current.definitions.push({title:row[ix('Title')],body:row[ix('Body (HTML)')]||'',tags:row[ix('Tags')]||'',release:row[ix(dateHeader)]||''});
+  const sku=String(row[ix('Variant SKU')]||'').trim().toUpperCase();
+  if(sku){current.skus.add(sku);if(!bySku.has(sku))bySku.set(sku,[]);bySku.get(sku).push(current);}
+ }
+ const {resolved,conflicts}=lunarResolveReleaseDates(sources),held=[...conflicts],updates=[];
+ for(const [code,target]of resolved){
+  const sku='CR-LUNAR-'+code,matches=bySku.get(sku)||[];if(!matches.length)continue;
+  const p=matches[0];
+  if(matches.length!==1||p.skus.size!==1||p.definitions.length!==1){held.push({code,reason:'Ambiguous Shopify SKU/product. Review manually.'});continue;}
+  const old=p.definitions[0],oldDate=lunarISO(String(old.release).replace(/^'/,''));
+  if(!oldDate){held.push({code,reason:'Shopify release date is missing or invalid. Review manually.'});continue;}
+  let title=old.title,body=old.body,tags=old.tags;const future=target.date>today;
+  if(future){
+   title=title.replace(/\s*[—–-]\s*PRE[- ]?ORDER\s*$/i,'').trim()+' — PRE-ORDER';
+   const tagList=tags.split(',').map(x=>x.trim()).filter(Boolean).filter(x=>!/^New Release$/i.test(x));
+   if(!tagList.some(x=>/^Pre-Order$/i.test(x)))tagList.push('Pre-Order');tags=tagList.join(', ');
+   // Only replace the generated leading notice, preserving the owner's remaining HTML.
+   body=body.replace(/^\s*<p(?:\s[^>]*)?>\s*PRE-ORDER\s*[—–-]\s*OFFICIAL RELEASE DATE:[\s\S]*?<\/p>\s*/i,'');
+   if(/PRE-ORDER\s*[—–-]\s*OFFICIAL RELEASE DATE:/i.test(body)){held.push({code,reason:'Preorder notice has a custom format. Review description manually.'});continue;}
+   body='<p>PRE-ORDER — OFFICIAL RELEASE DATE: '+prettyRelease(target.date)+'. This item will not be dispatched before its official release date.</p>'+body;
+  }
+  if(oldDate===target.date&&title===old.title&&body===old.body&&tags===old.tags)continue;
+  // Keep the generated detail date consistent with the metafield, without rebuilding copy.
+  body=body.replace(/((?:<br\s*\/?>|<p>)Release Date:\s*)[^<\r\n]+(?=<|$)/gi,(_,prefix)=>prefix+prettyRelease(target.date));
+  updates.push({code,handle:p.handle,title,body,tags,oldDate,date:target.date,source:target.source,restorePreorder:future});
+ }
+ return {updates,held};
+}
+function lunarDateCSV(plan){
+ const header=['Handle','Title','Body (HTML)','Tags','Release Date (product.metafields.custom.release_date)'];
+ return '\ufeff'+[header,...plan.updates.map(x=>[x.handle,x.title,x.body,x.tags,x.date])].map(row=>row.map(q).join(',')).join('\r\n');
+}
+function lunarCurrentDatePlan(){
+ if(!$('lunarMasterComplete').checked)throw Error('Confirm that the Shopify export contains ALL products.');
+ if(!lunarDateShopifySnapshot||!lunarMaster||Date.now()-lunarDateShopifySnapshot.at>30*60*1000)throw Error('Load a fresh full Shopify export first (within 30 minutes).');
+ return lunarBuildDateUpdates(lunarDateShopifySnapshot.text,lunarDateSources());
+}
+let lunarDatePreviewSignature='';
+function lunarPreviewDateUpdates(){
+ lunarDatePreviewSignature='';$('lunarDateDownload').disabled=true;
+ try{
+  persistActiveLunarBatch();const plan=lunarCurrentDatePlan();lunarDatePreviewSignature=JSON.stringify(plan);
+  $('lunarDateResults').innerHTML='<p><b>'+plan.updates.length+' existing listings need an update; '+plan.held.length+' need review.</b></p>'+plan.updates.map(x=>'<p>'+esc(x.code)+' — '+esc(x.title)+'<br>'+esc(x.oldDate)+' → <b>'+esc(x.date)+'</b>'+(x.restorePreorder?' · restore preorder details':' · date correction only')+'</p>').join('')+plan.held.map(x=>'<p class="warn">'+esc(x.code)+' — '+esc(x.reason)+'</p>').join('');
+  $('lunarDateDownload').disabled=!plan.updates.length;
+ }catch(e){$('lunarDateResults').textContent=e.message;}
+}
+$('lunarPublishStep').insertAdjacentHTML('beforeend','<section class="panel" id="lunarDatePanel"><h3>Keep existing Shopify release dates up to date</h3><p>After refreshing Lunar dates or Product Data, check ALL saved batches against a fresh full Shopify export. New-product exports do not update existing listings. Download and import this separate update before the overnight release flow.</p><button class="btn secondary" id="lunarDateCheck">CHECK RELEASE-DATE CHANGES</button> <button class="btn" id="lunarDateDownload" disabled>DOWNLOAD SHOPIFY RELEASE-DATE UPDATES</button><div id="lunarDateResults" role="status"></div><p>For future dates, this restores preorder title, notice and tags. It does not confirm receipt or change stock, prices, visibility or product status. Import with “Overwrite products with matching handles” selected. Omitted columns stay unchanged. Check Shopify’s preview before importing, then load a fresh export to verify.</p></section>');
+$('lunarDateCheck').onclick=lunarPreviewDateUpdates;
+$('lunarDateDownload').onclick=()=>{
+ try{
+  const plan=lunarCurrentDatePlan();if(JSON.stringify(plan)!==lunarDatePreviewSignature)throw Error('Dates or Shopify data changed. Check release-date changes again before downloading.');
+  if(!plan.updates.length)throw Error('No release-date updates are needed.');
+  dl(new Blob([lunarDateCSV(plan)],{type:'text/csv'}),'ComicRox_Shopify_RELEASE_DATE_UPDATES_'+lunarDateToday()+'.csv');
+  lunarDatePreviewSignature='';$('lunarDateDownload').disabled=true;
+  $('lunarDateResults').insertAdjacentHTML('beforeend','<p><b>Downloaded '+plan.updates.length+' updates. Shopify has NOT changed yet.</b> Import the CSV with matching-handle overwrite enabled, then load a fresh Shopify export and check again. Keep the release workflow off while correcting already-released listings.</p>');
+  lunarDateShopifySnapshot=null;lunarMaster=null;lunarExportBadge();
+ }catch(e){$('lunarDateResults').textContent=e.message;$('lunarDateDownload').disabled=true;}
+};
+// Record when supplier dates were actually observed; reopening a batch is not a refresh.
+const lunarDateEnrichOriginal=applyLunarProductDataText;
+applyLunarProductDataText=function(text,name){
+ const dates=pPlannerProductDatesFromText(text),result=lunarDateEnrichOriginal(text,name),at=new Date().toISOString();
+ const updates=new Map([...dates].map(([code,date])=>[code,pDateISO(date)]));
+ if(updates.size){lunarDateImportOriginal(name,[['Code','InStoreDate'],...updates].map(row=>row.map(q).join(',')).join('\n'));lunarSyncSavedReleaseDates(updates,at);}
+ persistActiveLunarBatch();return result;
+};
+const lunarDateImportOriginal=pImportPlannerDates;
+pImportPlannerDates=function(name,text){
+ const result=lunarDateImportOriginal(name,text);
+ const cache=pReadDateCache(),rows=parseCsv(text.replace(/^\uFEFF/,'')),hi=rows.findIndex(r=>r.includes('Code')&&r.includes('InStoreDate'));
+ const updates=new Map(rows.slice(hi+1).filter(row=>pLunarISO(row[rows[hi].indexOf('InStoreDate')])).map(row=>String(row[rows[hi].indexOf('Code')]||'').trim().toUpperCase()).filter(code=>cache[code]).map(code=>[code,cache[code].iso]));
+ lunarSyncSavedReleaseDates(updates,new Date().toISOString());
+ $('plannerStatus').textContent+=' Revised dates are local only: use CHECK SHOPIFY & EXPORT → CHECK RELEASE-DATE CHANGES and import the update CSV into Shopify.';
+ return result;
+};
+
+function lunarSyncSavedReleaseDates(dates,at){
+ const all=loadLunarBatches();
+ for(const b of all)for(const r of b.records||[])if(dates.has(r.code)){r.release=dates.get(r.code);r.releaseDateObservedAt=at;}
+ saveLunarBatches(all);
+ for(const r of wholesaleRecords)if(dates.has(r.code)){r.release=dates.get(r.code);r.releaseDateObservedAt=at;}
+ if(wholesaleRecords.length)renderWholesale();
+}
