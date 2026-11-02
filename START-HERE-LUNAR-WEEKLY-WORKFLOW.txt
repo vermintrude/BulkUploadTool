@@ -1,0 +1,96 @@
+COMICROX LUNAR — SIMPLE WEEKLY WORKFLOW
+2 November 2026
+
+INSTALL THIS UPDATE
+This includes the 28 October release-date fix. Install this update only.
+
+1. In the current tool: Lunar Batch -> Saved Work & History -> DOWNLOAD LUNAR BACKUP.
+2. Keep a spare copy of ComicRox-Lunar-Workflow.js from your current tool folder.
+3. Replace ONLY ComicRox-Lunar-Workflow.js with the supplied file in that same folder.
+   Leave your HTML, server, settings and other files as they are.
+4. Reload the tool with Ctrl+F5, then open LUNAR BATCH -> START HERE.
+   Keep using the same browser/address and folder. Do not clear browser data.
+
+START HERE — CHOOSE WHAT HAPPENED TODAY
+
+NEW ORDER
+Use Order_123456.csv in ORDER & PLAN.
+Refresh current Lunar dates, select a release week and SEND TO WEBSITE PREP.
+Load Product Data, review titles/prices, then SAVE REVIEW.
+Load a fresh Shopify ALL-products export, confirm it is complete and download
+new-product CSVs. Import those into Shopify and record their import outcome.
+Products already in Shopify are excluded; their stock is not added again.
+
+CHANGED RELEASE DATES
+Refresh Lunar dates or Product Data first.
+In CHECK SHOPIFY & EXPORT, load a fresh ALL-products Shopify export including
+custom.release_date, then CHECK RELEASE-DATE CHANGES.
+Review and download the separate date-update CSV. Import it into Shopify with
+"Overwrite products with matching handles" enabled. Check Shopify's preview;
+do not enable any additional sales-channel publication option.
+Downloading the file does not apply it. Import before the overnight Flow runs.
+Load a fresh Shopify export afterwards and check again to verify the changes.
+Conflicting dates are held; refresh current Lunar data rather than guessing.
+
+NEW INVOICE
+Use Invoice_123456.csv in INVOICES — BILLING.
+Merchandise invoices record billed quantities and costs, not physical receipt.
+Shipping/credit-only invoices are saved separately with no stock additions.
+A shipping-only invoice is not a list of the books inside the box.
+
+PARCEL ARRIVED
+Use Shipment_123456.csv in DELIVERIES.
+The file records dispatch only. Count the actual parcel before confirming receipt.
+Enter good and damaged quantities. Use 0 for missing books.
+If every copy is present and undamaged, use ALL COPIES HERE AND UNDAMAGED,
+then tick the physical-count confirmation and SAVE PARCEL CHECK.
+If one shipment arrives in parts, reopen it and enter the NEW TOTAL received
+against that shipment. Saving replaces the previous total; it does not add it.
+Shortages, damage and notes stay on the saved receipt.
+Repeated imports reopen the same shipment without adding quantities again.
+An amended file for the same shipment number is held for manual review.
+An exact product/quantity match to an imported invoice is shown when available.
+
+YOUR WEEKLY VIEW
+START HERE shows known expected releases by week. Choose a week or use
+PREVIOUS WEEK / NEXT WEEK. A dash means the related document is not loaded.
+The table separates Ordered, Billed, Shipped and Good received quantities.
+DOWNLOAD WEEKLY CHECKLIST gives you a plain CSV checklist (not a Shopify import).
+
+READY TO CHECK IN CROSSLIST
+Only good copies confirmed received with a release date of today or earlier
+appear here. Future books wait for their release date. Date conflicts are held.
+Check current Shopify stock and existing listings, then complete any needed
+Crosslist/eBay/Whatnot work. Leave Shopify unticked when publishing via Crosslist.
+Mark the local checklist complete afterwards. Nothing is published by that button.
+
+STOCK RULE
+Do not add a shipment's full quantity again if it was already recorded in Shopify
+for preorders. Check sales, previous quantities and any stock you set to zero.
+This update never writes stock, listings or orders to Shopify, eBay or Whatnot.
+
+IMPORTANT ABOUT THE EXISTING AUTOMATIC FLOW
+The Shopify Flow still follows Shopify release dates. It has NOT been changed
+into a receipt-gated automation. Its email means "release date reached", not
+"parcel arrived". Use the local receipt checklist before crosslisting.
+Updating dates in this app alone does not update Shopify: import the date CSV.
+Physical delivery and the official release date remain two separate checks.
+
+BACKUPS
+Shipments, parcel counts, listing checks and billing documents are included in
+DOWNLOAD LUNAR BACKUP. Saved receipt edits retain the previous count in history.
+Old backups without delivery records still restore. As before, restoring a backup
+replaces the Lunar state contained in it, so download your current backup first.
+Completed export history is collapsed; unresolved imports remain visible.
+
+FIRST CHECK WITH YOUR CURRENT FILES
+- Shipment_905695.csv: 27 products / 104 net copies for 4 November.
+  Its +1/-1 GI Joe lines cancel and are excluded from received stock.
+- Shipment_908796.csv: 17 products / 64 copies for 11 November.
+  Matches invoice 969162 by codes and quantities; do not mark received until arrival.
+- Invoice_965400.csv: shipping/credit document only, no stock addition.
+Do not import shipment files using the invoice button.
+
+Tested locally in Chromium with synthetic cases and the supplied shipment/invoice
+files, including the 49-product invoice regression. No live Shopify import or
+Windows installation was performed here.

@@ -15,7 +15,7 @@ interprets these as new/current files. Defer this UI change to a future release.
 - Keep older unresolved pending exports discoverable with an explicit count;
   do not hide them or weaken duplicate-export/partial-import safeguards.
 
-Status: requested for future release; no application behavior changed.
+Status: implemented in the 2 November 2026 weekly-workflow update. Pending exports remain visible; completed exports are collapsed with dates, counts and run identifiers.
 
 ## OBS banner editor inside Admin — requested 20 October 2026
 

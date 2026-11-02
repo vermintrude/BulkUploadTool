@@ -95,7 +95,7 @@ $('lunarFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const s
  const text=await f.text(),parsed=lunarInvoiceRows(text,f.name),fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))).map(v=>v.toString(16).padStart(2,'0')).join('');let batches=loadLunarBatches(),existing=batches.find(b=>b.invoiceId===parsed.id);
  if(existing){if(existing.invoiceFingerprint!==fingerprint)throw Error('Invoice '+parsed.id+' was already imported with different contents. Your existing work is retained; review the amendment before changing it.');openSavedLunarBatch(existing.id);st.textContent='Invoice '+parsed.id+' was already imported. Reopened the saved work; quantities were not added again.';showLunarPage('review');return;}
  persistActiveLunarBatch();batches=loadLunarBatches();const reviewed=new Map();for(const b of batches.sort((a,b)=>String(a.updatedAt).localeCompare(String(b.updatedAt))))for(const r of b.records||[])reviewed.set(lunarCodeKey(r),r);for(const r of wholesaleRecords)reviewed.set(lunarCodeKey(r),r);
- const records=parsed.records.map(fresh=>{const old=reviewed.get(lunarCodeKey(fresh));return old?{...fresh,...old,code:fresh.code,qty:fresh.qty,cost:fresh.cost,rrp:fresh.rrp,release:fresh.release,invoiceQty:fresh.invoiceQty,invoiceUnitUsd:fresh.invoiceUnitUsd,invoiceTotalUsd:fresh.invoiceTotalUsd,invoiceLines:fresh.invoiceLines,upc:fresh.upc,excludeFromExport:fresh.excludeFromExport}:fresh;});const now=new Date().toISOString(),weekKey=pDateISO(pMonday(pParseDate(records.map(r=>r.release).sort().pop())));const b={id:'LI-'+parsed.id,weekKey,source:f.name,invoiceDate:parsed.invoiceDate,invoiceId:parsed.id,invoiceFingerprint:fingerprint,status:'invoice_imported',createdAt:now,updatedAt:now,records};batches.push(b);saveLunarBatches(batches);activeLunarBatchId=b.id;wholesaleRecords=structuredClone(records);renderWholesale();persistActiveLunarBatch();st.textContent=`Imported invoice ${parsed.id}: ${records.length} products / ${records.reduce((n,r)=>n+Number(r.qty),0)} units from ${parsed.lineCount} invoice lines. ${parsed.splitProductCount} products have split invoice lines; original quantities and costs retained. ${records.filter(r=>r.excludeFromExport).length} free promotional lines excluded from sale. Prepared titles, prices, descriptions and images retained. Invoice records billing, not physical receipt.`;showLunarPage(records.filter(r=>!r.excludeFromExport).every(r=>r.productDataMatched)?'review':'product');$('lunarStatus').textContent=st.textContent;lunarRefreshGuide();
+ const records=parsed.records.map(fresh=>{const old=reviewed.get(lunarCodeKey(fresh));return old?{...fresh,...old,code:fresh.code,qty:fresh.qty,cost:fresh.cost,rrp:fresh.rrp,release:fresh.release,invoiceQty:fresh.invoiceQty,invoiceUnitUsd:fresh.invoiceUnitUsd,invoiceTotalUsd:fresh.invoiceTotalUsd,invoiceLines:fresh.invoiceLines,upc:fresh.upc,excludeFromExport:fresh.excludeFromExport,...lunarInvoiceReleaseFields(fresh,old,parsed.invoiceDate)}:{...fresh,...lunarInvoiceReleaseFields(fresh,null,parsed.invoiceDate)};});const now=new Date().toISOString(),weekKey=pDateISO(pMonday(pParseDate(records.map(r=>r.release).sort().pop())));const b={id:'LI-'+parsed.id,weekKey,source:f.name,invoiceDate:parsed.invoiceDate,invoiceId:parsed.id,invoiceFingerprint:fingerprint,status:'invoice_imported',createdAt:now,updatedAt:now,records};batches.push(b);saveLunarBatches(batches);activeLunarBatchId=b.id;wholesaleRecords=structuredClone(records);renderWholesale();persistActiveLunarBatch();st.textContent=`Imported invoice ${parsed.id}: ${records.length} products / ${records.reduce((n,r)=>n+Number(r.qty),0)} units from ${parsed.lineCount} invoice lines. ${parsed.splitProductCount} products have split invoice lines; original quantities and costs retained. ${records.filter(r=>r.excludeFromExport).length} free promotional lines excluded from sale. Prepared titles, prices, descriptions and images retained. Invoice records billing, not physical receipt.`;showLunarPage(records.filter(r=>!r.excludeFromExport).every(r=>r.productDataMatched)?'review':'product');$('lunarStatus').textContent=st.textContent;lunarRefreshGuide();
  }catch(err){st.textContent=err.message;}finally{e.target.value='';}};
 $('completeLunarReview').onclick=()=>{try{if(!activeLunarBatchId)throw Error('Choose a planner week or import an invoice first.');for(const r of wholesaleRecords)r.ownerReviewed=true;persistActiveLunarBatch();const all=loadLunarBatches(),b=all.find(x=>x.id===activeLunarBatchId);b.reviewComplete=true;saveLunarBatches(all);showLunarPage('publish');lunarRefreshGuide();}catch(e){alert(e.message);}};
 function lunarRefreshGuide(){const b=lunarActive(),paid=wholesaleRecords.filter(r=>!r.excludeFromExport);$('lunarGuide').innerHTML=`<b>${b?.invoiceId?'Invoice '+esc(b.invoiceId):b?'Preparing w/c '+esc(b.weekKey):'Start a Lunar batch'}</b><p>${!b?'Import Order_*.csv in Delivery Planner, then choose a release week and SEND TO WEBSITE PREP. If the invoice has already arrived, use Invoice instead.':b.invoiceId?'Invoice already imported. Keep this batch open; load missing Product Data, review, then check Shopify and export only new products. Do not send the planner week again.':'Load Product Data → review titles, images and prices → check Shopify and export preorders. When the invoice arrives, use Invoice; existing products will be reported rather than recreated.'}</p><span>${paid.length} sale products; ${wholesaleRecords.filter(r=>r.excludeFromExport).length} excluded promotional lines. ${b?.invoiceId?'No need to import this invoice again.':''}</span>`;$('completeLunarReview').textContent='SAVE REVIEW → CHECK SHOPIFY & EXPORT';const badge=$('lunarInvoiceStep').querySelector('.stepBadge');if(b?.invoiceId)badge.textContent='IMPORTED — NO REPEAT NEEDED';lunarRenderExclusions();lunarExportBadge();const waiting=lunarReadState().deferred?.length||0;if(waiting)$('lunarGuide').insertAdjacentHTML('beforeend','<p class=warn>'+waiting+' held products are waiting in Saved Work & History. They have not been deleted or permanently excluded.</p>');if(b?.invoiceId){const split=wholesaleRecords.filter(r=>r.invoiceLines?.length>1);if(split.length)$('lunarGuide').insertAdjacentHTML('beforeend','<details><summary>Split invoice costs — '+split.length+' products</summary>'+split.map(r=>'<p>'+esc(r.code)+' — '+esc(r.rawTitle)+': '+r.invoiceLines.map(x=>esc(x.quantity)+' × $'+esc(x.unitUsd)+' ('+esc(x.discount)+'% discount)').join(' + ')+' = '+esc(r.invoiceQty)+' copies / $'+esc(r.invoiceTotalUsd)+' total. Blended unit cost $'+esc(r.invoiceUnitUsd)+'.</p>').join('')+'</details>');}}
@@ -144,7 +144,7 @@ $('lunarPublishStep').insertAdjacentHTML('beforeend','<p>Required file: Shopify 
 $('savedBatchList').insertAdjacentHTML('afterend','<button class="btn secondary" id="lunarBackup">DOWNLOAD LUNAR BACKUP</button><label class="btn filebtn">RESTORE LUNAR BACKUP<input id="lunarRestore" type="file" accept=".json" hidden></label><section id="lunarCostHistory"></section>');
 $('lunarShopifyMaster').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;lunarMaster=null;$('lunarMasterStatus').textContent='Reading '+f.name+'…';lunarSaveMaster(await f.text(),f.name);lunarMasterFeedback();}catch(err){lunarMaster=null;$('lunarMasterStatus').textContent=err.message;}finally{e.target.value='';lunarExportBadge();}};
 $('lunarBackup').onclick=()=>{persistActiveLunarBatch();const keys=[LUNAR_BATCH_STORE_KEY,lunarWorkflowKey,PLANNER_ORDERS_KEY,PLANNER_DATES_KEY,PLANNER_PENDING_KEY,PLANNER_STORE_KEY];const values={};for(const k of keys){const v=localStorage.getItem(k);if(v!==null)values[k]=v;}dl(new Blob([JSON.stringify({schema:1,at:new Date().toISOString(),values},null,2)],{type:'application/json'}),'ComicRox-Lunar-Backup.json');};
-$('lunarRestore').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;const v=JSON.parse(await f.text()),allowed=new Set([LUNAR_BATCH_STORE_KEY,lunarWorkflowKey,PLANNER_ORDERS_KEY,PLANNER_DATES_KEY,PLANNER_PENDING_KEY,PLANNER_STORE_KEY]);if(v.schema!==1||!v.values||typeof v.values!=='object'||Array.isArray(v.values))throw Error('Invalid backup.');for(const[k,t]of Object.entries(v.values)){if(!allowed.has(k)||typeof t!=='string')throw Error('Unexpected backup key.');const data=JSON.parse(t);if(k===LUNAR_BATCH_STORE_KEY&&(!Array.isArray(data)||data.some(b=>!b.id||!Array.isArray(b.records))))throw Error('Invalid saved batch data.');if(k===lunarWorkflowKey&&(data.schema!==2||!Array.isArray(data.exports)||data.exports.some(x=>!x.id||!Array.isArray(x.codes)||typeof x.csv!=='string')))throw Error('Invalid export history.');if(k===lunarWorkflowKey&&data.deferred!==undefined&&(!Array.isArray(data.deferred)||data.deferred.some(x=>!x.batchId||!x.code||!Array.isArray(x.reasons))))throw Error('Invalid held-product history.');if(k===PLANNER_ORDERS_KEY&&(!data||typeof data!=='object'))throw Error('Invalid order ledger.');}if(!confirm('Restore this Lunar backup? Download a backup of current work first. This replaces Lunar data only.'))return;const original={};for(const k of Object.keys(v.values))original[k]=localStorage.getItem(k);try{for(const[k,t]of Object.entries(v.values))localStorage.setItem(k,t);}catch(err){for(const[k,t]of Object.entries(original))t===null?localStorage.removeItem(k):localStorage.setItem(k,t);throw err;}location.reload();}catch(err){alert(err.message);}finally{e.target.value='';}};
+$('lunarRestore').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;const v=JSON.parse(await f.text()),allowed=new Set([LUNAR_BATCH_STORE_KEY,lunarWorkflowKey,PLANNER_ORDERS_KEY,PLANNER_DATES_KEY,PLANNER_PENDING_KEY,PLANNER_STORE_KEY]);if(v.schema!==1||!v.values||typeof v.values!=='object'||Array.isArray(v.values))throw Error('Invalid backup.');for(const[k,t]of Object.entries(v.values)){if(!allowed.has(k)||typeof t!=='string')throw Error('Unexpected backup key.');const data=JSON.parse(t);if(k===LUNAR_BATCH_STORE_KEY&&(!Array.isArray(data)||data.some(b=>!b.id||!Array.isArray(b.records))))throw Error('Invalid saved batch data.');if(k===lunarWorkflowKey&&(data.schema!==2||!Array.isArray(data.exports)||data.exports.some(x=>!x.id||!Array.isArray(x.codes)||typeof x.csv!=='string')))throw Error('Invalid export history.');if(k===lunarWorkflowKey)lunarValidateDeliveries(data);if(k===lunarWorkflowKey&&data.deferred!==undefined&&(!Array.isArray(data.deferred)||data.deferred.some(x=>!x.batchId||!x.code||!Array.isArray(x.reasons))))throw Error('Invalid held-product history.');if(k===PLANNER_ORDERS_KEY&&(!data||typeof data!=='object'))throw Error('Invalid order ledger.');}if(!confirm('Restore this Lunar backup? Download a backup of current work first. This replaces Lunar data only.'))return;const original={};for(const k of Object.keys(v.values))original[k]=localStorage.getItem(k);try{for(const[k,t]of Object.entries(v.values))localStorage.setItem(k,t);}catch(err){for(const[k,t]of Object.entries(original))t===null?localStorage.removeItem(k):localStorage.setItem(k,t);throw err;}location.reload();}catch(err){alert(err.message);}finally{e.target.value='';}};
 document.addEventListener('change',e=>{const code=e.target.dataset?.lunarInclude;if(code){wholesaleRecords.find(r=>r.code===code).excludeFromExport=!e.target.checked;persistActiveLunarBatch();lunarRefreshGuide();}});
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.lunarRedownload||b.dataset.lunarOutcome;if(!id)return;try{const state=lunarReadState(),run=state.exports.find(x=>x.id===id);if(!run)return;if(b.dataset.lunarRedownload){dl(new Blob([run.csv],{type:'text/csv'}),run.fileName);return;}if(!confirm(b.dataset.outcome==='imported'?'Confirm every row was successfully imported into Shopify?':'Confirm this CSV was not imported, or cancelled? For partial success first check a fresh Shopify export.'))return;run.outcome=b.dataset.outcome;lunarWriteState(state);lunarMaster=null;lunarRenderHistory();}catch(err){alert(err.message);}});
 ['usdGbpRate','inboundFreightUsd','mailerGbp'].forEach(id=>$(id).addEventListener('change',()=>persistActiveLunarBatch()));
@@ -444,4 +444,228 @@ function lunarSyncSavedReleaseDates(dates,at){
  saveLunarBatches(all);
  for(const r of wholesaleRecords)if(dates.has(r.code)){r.release=dates.get(r.code);r.releaseDateObservedAt=at;}
  if(wholesaleRecords.length)renderWholesale();
+}
+
+
+// Deliveries are evidence of dispatch. Receipt is recorded only after the owner counts a parcel.
+function lunarValidateDeliveries(v){
+ for(const key of ['shipments','billingDocuments'])if(v[key]!==undefined&&(!v[key]||typeof v[key]!=='object'||Array.isArray(v[key])))throw Error('Invalid delivery/billing history. Restore a verified backup.');
+ for(const [id,s]of Object.entries(v.shipments||{})){
+  if(!/^\d+$/.test(id)||s.id!==id||!s.fingerprint||!Array.isArray(s.items)||!Array.isArray(s.lines)||!Array.isArray(s.adjustments)||!Number.isFinite(Date.parse(s.importedAt)))throw Error('Invalid saved shipment.');
+  const codes=new Set();for(const r of s.items){if(!/^\d{4}[A-Z]{2}\d+$/.test(r.code)||codes.has(r.code)||!Number.isSafeInteger(r.qty)||r.qty<=0||!lunarISO(r.release))throw Error('Invalid saved shipment product.');codes.add(r.code);}
+  if(s.receipt){
+   if(!lunarISO(s.receipt.date)||!s.receipt.counts||typeof s.receipt.counts!=='object')throw Error('Invalid receipt history.');
+   for(const r of s.items){const c=s.receipt.counts[r.code];if(!c||![c.good,c.damaged].every(n=>Number.isSafeInteger(n)&&n>=0)||c.good+c.damaged>r.qty)throw Error('Invalid received quantities.');}
+   if(Object.keys(s.receipt.counts).some(code=>!codes.has(code)))throw Error('Unexpected receipt product.');
+  }
+  if(s.completed!==undefined&&(!s.completed||typeof s.completed!=='object'||Array.isArray(s.completed)))throw Error('Invalid listing checklist.');
+  for(const [code,c]of Object.entries(s.completed||{}))if(!codes.has(code)||!s.receipt||c.good!==s.receipt.counts[code].good||!lunarISO(c.release)||!Number.isFinite(Date.parse(c.at)))throw Error('Invalid completed listing entry.');
+ }
+ for(const [id,b]of Object.entries(v.billingDocuments||{}))if(b.id!==id||!/^\d+$/.test(id)||!['merchandise','shipping_credit'].includes(b.kind)||!b.fingerprint)throw Error('Invalid saved billing document.');
+ return v;
+}
+const lunarDeliveryReadOriginal=lunarReadState;
+lunarReadState=function(){return lunarValidateDeliveries(lunarDeliveryReadOriginal());};
+const lunarDeliveryWriteOriginal=lunarWriteState;
+lunarWriteState=function(v){lunarValidateDeliveries(v);lunarDeliveryWriteOriginal(v);};
+async function lunarDocumentFingerprint(text){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))).map(x=>x.toString(16).padStart(2,'0')).join('');}
+function lunarParseShipment(text,name){
+ const id=String(name).match(/^Shipment_(\d+)\.csv$/i)?.[1],rows=parseCsv(text.replace(/^\uFEFF/,''));
+ if(!id||String(rows[0]?.[0]||'').trim()!==id)throw Error('Choose the original Shipment_123456.csv file. Its shipment number must match the filename.');
+ const hi=rows.findIndex(r=>r[0]==='Code'&&r[1]==='Title');if(hi<0)throw Error('Shipment product headers are missing.');
+ const h=rows[hi],ix=n=>h.indexOf(n);for(const n of ['Code','Title','Qty','UPC','In-Store Date'])if(ix(n)<0)throw Error('Shipment column missing: '+n);
+ const groups=new Map(),lines=[],seen=new Set();
+ for(const row of rows.slice(hi+1)){
+  if(row.every(x=>!String(x).trim()))continue;
+  const get=n=>String(row[ix(n)]??'').trim(),code=get('Code').toUpperCase();
+  if(!/^\d{4}[A-Z]{2}\d+$/.test(code))throw Error('Unsupported shipment row. No shipment has been saved.');
+  const qty=Number(get('Qty')),release=lunarISO(get('In-Store Date')),title=get('Title'),upc=get('UPC');
+  if(!/^-?\d+$/.test(get('Qty'))||!Number.isSafeInteger(qty)||!release||!title)throw Error('Invalid shipment quantity, date or title for '+code+'.');
+  const signature=JSON.stringify(row);if(seen.has(signature))throw Error('Identical shipment line repeated for '+code+'. Review the original file.');seen.add(signature);
+  const identity=JSON.stringify([title.toUpperCase().replace(/\s+/g,' '),upc,release]);
+  let group=groups.get(code);if(group&&group.identity!==identity)throw Error('Conflicting shipment details for '+code+'.');
+  if(!group){group={code,title,upc,release,qty:0,identity};groups.set(code,group);}
+  group.qty+=qty;if(!Number.isSafeInteger(group.qty))throw Error('Shipment quantity is too large.');
+  lines.push({code,title,qty,release,upc,raw:row});
+ }
+ if(!groups.size)throw Error('Shipment contains no product rows.');
+ const items=[],adjustments=[];for(const {identity,...r}of groups.values())(r.qty>0?items:adjustments).push(r);
+ return {id,sourceFile:name,dispatchText:String(rows[1]?.[0]||''),documentDate:lunarISO(String(rows[1]?.[0]||'').split(' ')[0]),items,adjustments,lines};
+}
+async function lunarImportShipment(text,name){
+ const parsed=lunarParseShipment(text,name),fingerprint=await lunarDocumentFingerprint(text),state=lunarReadState();state.shipments??={};
+ const existing=state.shipments[parsed.id];
+ if(existing){if(existing.fingerprint!==fingerprint)throw Error('Shipment '+parsed.id+' is already saved with different contents. Existing receipt checks are retained; review the amendment manually.');return {shipment:existing,reopened:true};}
+ const shipment={...parsed,fingerprint,importedAt:new Date().toISOString(),receipt:null,completed:{},receiptHistory:[]};state.shipments[parsed.id]=shipment;lunarWriteState(state);return {shipment,reopened:false};
+}
+function lunarSaveReceipt(id,date,counts,notes){
+ const state=lunarReadState(),s=state.shipments?.[id];if(!s)throw Error('Import the shipment first.');
+ date=lunarISO(date);if(!date||date>lunarDateToday())throw Error('Choose the date the parcel arrived, no later than today.');
+ const checked={};for(const r of s.items){const c=counts[r.code];if(!c||![c.good,c.damaged].every(n=>Number.isSafeInteger(n)&&n>=0)||c.good+c.damaged>r.qty)throw Error('Check received quantities for '+r.code+'. Good plus damaged cannot exceed shipped quantity. Put extras in the notes.');checked[r.code]={good:c.good,damaged:c.damaged};}
+ const receipt={date,counts:checked,notes:String(notes||'').trim(),savedAt:new Date().toISOString()};
+ if(s.receipt&&JSON.stringify([s.receipt.date,s.receipt.counts,s.receipt.notes])===JSON.stringify([receipt.date,receipt.counts,receipt.notes]))return s;
+ if(s.receipt)(s.receiptHistory??=[]).push({receipt:s.receipt,completed:s.completed});
+ s.receipt=receipt;s.completed={};lunarWriteState(state);return s;
+}
+function lunarBillingRows(text){
+ const rows=parseCsv(text.replace(/^\uFEFF/,'')),hi=rows.findIndex(r=>r[0]==='Code'&&r[1]==='Title');if(hi<0)throw Error('Invoice product headers are missing.');
+ const h=rows[hi],items=[];for(const row of rows.slice(hi+1)){const code=String(row[h.indexOf('Code')]||'').trim();if(!/^\d{4}[A-Z]{2}\d+$/.test(code))continue;const qty=Number(row[h.indexOf('Qty')]);if(!Number.isSafeInteger(qty))throw Error('Invalid invoice quantity.');items.push({code,qty,title:row[h.indexOf('Title')],release:lunarISO(row[h.indexOf('In-Store Date')]),raw:row});}
+ return items;
+}
+async function lunarRecordBilling(text,name,kind){
+ const id=text.match(/Invoice\s*#\s*(\d+)/i)?.[1],filenameId=name.match(/^Invoice_(\d+)(?: \(\d+\))?\.csv$/i)?.[1];if(!id||id!==filenameId)throw Error('Choose the original Invoice_123456.csv with a matching invoice number.');
+ const items=lunarBillingRows(text),fingerprint=await lunarDocumentFingerprint(text),state=lunarReadState();state.billingDocuments??={};
+ const old=state.billingDocuments[id];if(old){if(old.fingerprint!==fingerprint)throw Error('Invoice '+id+' has different contents from the saved document. Review the amendment manually.');return old;}
+ const doc={id,sourceFile:name,kind,fingerprint,importedAt:new Date().toISOString(),date:lunarISO(text.match(/Invoice Date:\s*([^\r\n]+)/i)?.[1]),amount:text.match(/Pay this amount:[^\r\n]*?\$([\d,.]+)/i)?.[1]||'',items,rawText:text};
+ state.billingDocuments[id]=doc;lunarWriteState(state);return doc;
+}
+// A shipping/credit-only invoice belongs in billing history, never in a sale batch.
+const lunarDeliveryInvoiceOriginal=$('lunarFile').onchange;
+$('lunarFile').onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{
+  const text=await f.text(),items=lunarBillingRows(text),incomingId=text.match(/Invoice\s*#\s*(\d+)/i)?.[1],prior=lunarReadState().billingDocuments?.[incomingId];
+  if(!incomingId||f.name.match(/^Invoice_(\d+)(?: \(\d+\))?\.csv$/i)?.[1]!==incomingId)throw Error('Choose the original Invoice_123456.csv with a matching invoice number.');
+  if(prior&&prior.fingerprint!==await lunarDocumentFingerprint(text))throw Error('Invoice '+incomingId+' has different contents from the saved document. Existing records are retained.');
+  const shippingOnly=items.every(r=>r.qty<=0)&&/Shipping Charges/i.test(text);
+  if(shippingOnly){const doc=await lunarRecordBilling(text,f.name,'shipping_credit');$('lunarInvoiceMessage').textContent='Invoice '+doc.id+' saved as shipping / credit only. No books or stock were added. Next: check the parcel in DELIVERIES when it arrives.';e.target.value='';lunarRenderDashboard();return;}
+  // Normal merchandise imports retain all existing invoice validation and duplicate protection.
+  await lunarDeliveryInvoiceOriginal(e);
+  const id=text.match(/Invoice\s*#\s*(\d+)/i)?.[1],b=loadLunarBatches().find(b=>b.invoiceId===id),hash=await lunarDocumentFingerprint(text);
+  if(b?.invoiceFingerprint===hash){await lunarRecordBilling(text,f.name,'merchandise');lunarRenderDashboard();}
+ }catch(err){$('lunarInvoiceMessage').textContent=err.message;}finally{e.target.value='';}
+};
+const lunarDeliveryDateSourcesOriginal=lunarDateSources;
+lunarDateSources=function(){
+ const sources=lunarDeliveryDateSourcesOriginal();
+ for(const s of Object.values(lunarReadState().shipments||{}))for(const r of s.items){if(!sources.has(r.code))sources.set(r.code,[]);sources.get(r.code).push({date:r.release,source:'Shipment '+s.id,observedAt:s.documentDate?s.documentDate+'T00:00:00Z':''});}
+ return sources;
+};
+function lunarDeliveryDateInfo(){return lunarResolveReleaseDates(lunarDateSources());}
+function lunarDeliveryRows(today=lunarDateToday()){
+ const state=lunarReadState(),dates=lunarDeliveryDateInfo(),conflicts=new Map(dates.conflicts.map(x=>[x.code,x.reason])),result=[];
+ for(const s of Object.values(state.shipments||{}))for(const r of s.items){
+  const release=dates.resolved.get(r.code)?.date||r.release,c=s.receipt?.counts[r.code],good=c?.good||0,damaged=c?.damaged||0,missing=c?r.qty-good-damaged:null;
+  const conflict=conflicts.get(r.code),done=!!(s.completed?.[r.code]&&s.completed[r.code].release===release&&s.completed[r.code].good===good);
+  const status=conflict?'check_date':!s.receipt||!good?'waiting_delivery':release>today?'waiting_date':done?'done':'ready';
+  result.push({...r,shipmentId:s.id,release,good,damaged,missing,receiptDate:s.receipt?.date||'',status,conflict,done});
+ }
+ return result;
+}
+function lunarCompleteDelivery(id,code){
+ const row=lunarDeliveryRows().find(r=>r.shipmentId===id&&r.code===code);if(!row||row.status!=='ready')throw Error('Only received, undamaged books whose release date has arrived can be marked checked.');
+ const state=lunarReadState();state.shipments[id].completed[code]={at:new Date().toISOString(),good:row.good,release:row.release};lunarWriteState(state);
+}
+function lunarWeekStart(date){return pDateISO(pMonday(pParseDate(date)));}
+function lunarWeeklyRows(week){
+ const dates=lunarDeliveryDateInfo(),deliveries=lunarDeliveryRows(),result=new Map(),add=(code,title,release)=>{if(!release||lunarWeekStart(release)!==week)return null;if(!result.has(code))result.set(code,{code,title,release,ordered:null,billed:null,shipped:0,good:0,damaged:0,missing:0,awaitingCount:false,shipments:[],conflict:dates.conflicts.find(x=>x.code===code)?.reason});return result.get(code);};
+ for(const [id,o]of Object.entries(pReadOrders().orders))for(const r of o.items||[]){const x=add(r.code,r.title,dates.resolved.get(r.code)?.date||lunarISO(r.instore));if(x)x.ordered=(x.ordered||0)+Number(r.qty);}
+ for(const b of loadLunarBatches())for(const r of b.records||[]){const x=add(r.code,r.cleanTitle||r.rawTitle,dates.resolved.get(r.code)?.date||lunarISO(r.release));if(x&&b.invoiceId)x.billed=(x.billed||0)+Number(r.invoiceQty??r.qty);}
+ for(const r of deliveries){const x=add(r.code,r.title,r.release);if(!x)continue;x.shipped+=r.qty;x.good+=r.good;x.damaged+=r.damaged;x.missing+=r.missing||0;x.awaitingCount||=r.missing===null;x.shipments.push(r.shipmentId);}
+ return [...result.values()].sort((a,b)=>a.title.localeCompare(b.title));
+}
+function lunarReceiptEditor(id){
+ const s=lunarReadState().shipments?.[id];if(!s)return;
+ $('lunarShipmentSelect').value=id;
+ $('lunarReceiptEditor').innerHTML='<h3>Shipment '+esc(s.id)+' — '+s.items.length+' products / '+s.items.reduce((n,r)=>n+r.qty,0)+' copies</h3><p>'+esc(lunarShipmentInvoiceSummary(s))+'</p><p>Enter the total good and damaged copies you have received against this shipment. Blank good quantities must be filled in; use 0 for missing books. Saving again replaces these counts rather than adding them.</p><button class="btn secondary" id="lunarAllReceived">ALL COPIES HERE AND UNDAMAGED</button><label>Date parcel arrived <input type="date" id="lunarReceiptDate" value="'+esc(s.receipt?.date||lunarDateToday())+'" max="'+lunarDateToday()+'"></label><div style="overflow-x:auto"><table style="width:100%"><thead><tr><th>Book / code</th><th>Release</th><th>Shipped</th><th>Good received</th><th>Damaged</th></tr></thead><tbody>'+s.items.map(r=>'<tr><td>'+esc(r.title)+'<br><small>'+esc(r.code)+'</small></td><td>'+esc(r.release)+'</td><td>'+r.qty+'</td><td><input aria-label="Good received '+esc(r.code)+'" type="number" min="0" max="'+r.qty+'" step="1" style="width:85px" data-receipt-good="'+esc(r.code)+'" value="'+(s.receipt?s.receipt.counts[r.code].good:'')+'"></td><td><input aria-label="Damaged '+esc(r.code)+'" type="number" min="0" max="'+r.qty+'" step="1" style="width:85px" data-receipt-damaged="'+esc(r.code)+'" value="'+(s.receipt?s.receipt.counts[r.code].damaged:0)+'"></td></tr>').join('')+'</tbody></table></div><label>Shortages, damage or extra copies<textarea id="lunarReceiptNotes">'+esc(s.receipt?.notes||'')+'</textarea></label><label style="display:block;margin:12px 0"><input type="checkbox" id="lunarReceiptConfirmed"> I have counted the parcel. These are actual received quantities.</label><button class="btn" id="lunarSaveReceipt">SAVE PARCEL CHECK</button> <button class="btn secondary" id="lunarReceiptToDashboard">VIEW WEEKLY CHECKLIST</button>'+(s.adjustments.length?'<details><summary>'+s.adjustments.length+' cancelled / adjustment product(s) — excluded from receipt quantities</summary>'+s.adjustments.map(r=>'<p>'+esc(r.code)+' — net '+r.qty+' copies. Check Lunar credit records if needed.</p>').join('')+'</details>':'');
+ $('lunarAllReceived').onclick=()=>{for(const r of s.items){document.querySelector('[data-receipt-good="'+r.code+'"]').value=r.qty;document.querySelector('[data-receipt-damaged="'+r.code+'"]').value=0;}$('lunarReceiptConfirmed').checked=false;};
+ $('lunarReceiptToDashboard').onclick=()=>showLunarPage('overview');
+ $('lunarSaveReceipt').onclick=()=>{try{
+  if(!$('lunarReceiptConfirmed').checked)throw Error('Count the parcel and tick the confirmation first.');
+  const counts={};for(const r of s.items){const good=document.querySelector('[data-receipt-good="'+r.code+'"]'),damaged=document.querySelector('[data-receipt-damaged="'+r.code+'"]');if(!/^\d+$/.test(good.value)||!/^\d+$/.test(damaged.value))throw Error('Enter whole-number quantities for every book, including 0 for missing copies.');counts[r.code]={good:Number(good.value),damaged:Number(damaged.value)};}
+  lunarSaveReceipt(id,$('lunarReceiptDate').value,counts,$('lunarReceiptNotes').value);$('lunarShipmentMessage').textContent='Parcel check saved. Shopify stock has not changed. The weekly checklist now shows what can be listed and what must wait.';lunarRenderDashboard();lunarReceiptEditor(id);
+ }catch(e){$('lunarShipmentMessage').textContent=e.message;}};
+}
+function lunarRenderShipments(){
+ const select=$('lunarShipmentSelect');if(!select)return;const previous=select.value;
+ const shipments=Object.values(lunarReadState().shipments||{}).sort((a,b)=>b.id.localeCompare(a.id));
+ select.innerHTML='<option value="">Choose a saved shipment…</option>'+shipments.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.id)+' — '+(s.receipt?'parcel checked':'waiting for parcel check')+'</option>').join('');if(shipments.some(s=>s.id===previous))select.value=previous;
+}
+function lunarRenderDashboard(){
+ const box=$('lunarWeeklyList');if(!box)return;
+ const week=$('lunarWeekChoice').value||lunarWeekStart(lunarDateToday());let rows;
+ try{rows=lunarWeeklyRows(week);}catch(e){box.textContent=e.message;return;}
+ const weeks=new Set([lunarWeekStart(lunarDateToday()),week]);for(const item of lunarDateSources().values())for(const d of item)weeks.add(lunarWeekStart(d.date));
+ $('lunarWeekJump').innerHTML=[...weeks].sort().map(w=>'<option value="'+w+'" '+(w===week?'selected':'')+'>Week of '+esc(prettyRelease(w))+'</option>').join('');
+ $('lunarWeeklySummary').textContent=rows.length+' products · '+rows.reduce((n,r)=>n+r.shipped,0)+' copies recorded shipped · '+rows.reduce((n,r)=>n+r.good,0)+' good copies confirmed received. A dash means that document has not been loaded. These are local records, not live Shopify stock.';
+ box.innerHTML=rows.length?'<div style="overflow-x:auto"><table style="width:100%"><thead><tr><th>Book / release date</th><th>Ordered</th><th>Billed</th><th>Shipped</th><th>Good received</th><th>Next step</th></tr></thead><tbody>'+rows.map(r=>{
+ const action=r.conflict?'Check date — refresh Lunar dates':r.good&&r.release>lunarDateToday()?'Wait until '+prettyRelease(r.release):r.good?'Check the listing checklist below':r.shipped?'Count parcel / await delivery':'Await shipment';
+ return '<tr><td>'+esc(r.title||r.code)+'<br><small>'+esc(r.code)+' · '+esc(r.release)+'</small></td><td data-label="Ordered">'+esc(r.ordered??'—')+'</td><td data-label="Billed">'+esc(r.billed??'—')+'</td><td data-label="Shipped">'+r.shipped+'</td><td data-label="Good received">'+r.good+(r.damaged?' · '+r.damaged+' damaged':'')+(r.missing?' · '+r.missing+' missing':'')+'</td><td>'+esc(action)+(r.shipments.length?'<br><button class="btn secondary" data-open-shipment="'+esc(r.shipments[0])+'">CHECK PARCEL</button>':'')+'</td></tr>';
+ }).join('')+'</tbody></table></div>':'<p>No saved records for this week. Import your orders or shipment file to start.</p>';
+ const queue=lunarDeliveryRows(),ready=queue.filter(r=>r.status==='ready'),waiting=queue.filter(r=>r.status==='waiting_date'),unreceived=queue.filter(r=>r.status==='waiting_delivery'),conflicted=queue.filter(r=>r.status==='check_date');
+ $('lunarReadyList').innerHTML='<h3>Ready to check in Crosslist — '+ready.length+' shipment lines (all weeks)</h3><p>These have good copies confirmed received and a release date of today or earlier. Check current Shopify stock and existing listings first. Add only genuinely new stock; do not add the shipment quantity again if it is already recorded. Publish received stock to eBay/Whatnot, leaving Shopify unticked.</p>'+ready.map(r=>'<p>'+esc(r.title)+' · <b>'+r.good+' good copies received</b> · shipment '+esc(r.shipmentId)+'<br><button class="btn secondary" data-delivery-done="'+esc(r.shipmentId)+'" data-delivery-code="'+esc(r.code)+'">I HAVE CHECKED / LISTED THIS</button></p>').join('')+(ready.length?'':'<p>No received books currently awaiting listing checks.</p>')+'<details><summary>Waiting / completed</summary><p>'+waiting.length+' waiting for release date · '+unreceived.length+' awaiting good copies / parcel count · '+conflicted.length+' need a date check · '+queue.filter(r=>r.status==='done').length+' listing checks complete.</p>'+queue.filter(r=>r.status!=='ready').map(r=>'<p>'+esc(r.title)+' · '+esc({waiting_date:'Wait until '+prettyRelease(r.release),waiting_delivery:'Await good copies / check parcel',check_date:'Refresh conflicting release dates',done:'Listing check complete'}[r.status])+'</p>').join('')+'</details>';
+ const docs=Object.values(lunarReadState().billingDocuments||{});$('lunarBillingHistory').innerHTML='<details><summary>Saved invoice documents — '+docs.length+'</summary>'+docs.map(d=>'<p>Invoice '+esc(d.id)+' · '+(d.kind==='shipping_credit'?'shipping / credit only — no stock':'merchandise billing — not receipt')+(d.amount?' · $'+esc(d.amount):'')+'</p>').join('')+'</details>';
+ lunarRenderShipments();
+}
+const lunarDeliveryHelp={
+ overview:['Start here','Choose what has happened today. The weekly checklist below brings orders, invoices and deliveries together.'],
+ planner:['New order','Use Order_….csv here. Refresh Lunar dates, choose the release week, then SEND TO WEBSITE PREP. Orders are plans, not deliveries.'],
+ batches:['Your saved work','Open an existing batch to continue. Your reviewed prices and descriptions are retained.'],
+ product:['Add book details','Use Lunar Product Data for covers, descriptions and current dates. Then CONTINUE TO REVIEW & PRICE.'],
+ review:['Check titles and prices','Review the books, then SAVE REVIEW → CHECK SHOPIFY & EXPORT. Receipt is checked separately in DELIVERIES.'],
+ publish:['Send changes to Shopify','Load a fresh ALL-products Shopify export. New-product CSVs create missing books; release-date CSVs correct existing books. Import each downloaded file into Shopify.'],
+ invoice:['New invoice','Use Invoice_….csv here. Merchandise invoices record billing; shipping / credit-only invoices are saved separately. Neither confirms delivery.'],
+ deliveries:['Parcel arrived','Use Shipment_….csv here. Importing records dispatch only. Count the parcel, enter good and damaged copies, then SAVE PARCEL CHECK.']
+};
+const lunarDeliveryGuideOriginal=lunarRefreshGuide;
+lunarRefreshGuide=function(){lunarDeliveryGuideOriginal();const page=document.querySelector('.lunarNavBtn.active')?.dataset.lunarNav||'overview',[title,help]=lunarDeliveryHelp[page]||lunarDeliveryHelp.overview;$('lunarGuide').innerHTML='<b>'+esc(title)+'</b><p>'+esc(help)+'</p><small>Shopify release emails follow dates only. Use the receipt checklist before listing on eBay / Whatnot.</small>';};
+const lunarDeliveryShowOriginal=showLunarPage;
+showLunarPage=function(page){
+ if(['overview','deliveries'].includes(page)){document.querySelectorAll('.lunarNavBtn').forEach(b=>b.classList.toggle('active',b.dataset.lunarNav===page));document.querySelectorAll('.lunarPage').forEach(p=>p.classList.toggle('active',p.dataset.lunarPage===page));}
+ else lunarDeliveryShowOriginal(page);
+ lunarRefreshGuide();if(['overview','deliveries'].includes(page))lunarRenderDashboard();
+};
+$('lunarSubnav').insertAdjacentHTML('afterbegin','<button class="lunarNavBtn" data-lunar-nav="overview">START HERE</button>');
+$('lunarSubnav').insertAdjacentHTML('beforeend','<button class="lunarNavBtn" data-lunar-nav="deliveries">DELIVERIES</button>');
+for(const page of ['overview','deliveries'])document.querySelector('[data-lunar-nav="'+page+'"]').onclick=()=>showLunarPage(page);
+document.querySelector('[data-lunar-nav="invoice"]').textContent='INVOICES — BILLING';
+$('wholesalePane').insertAdjacentHTML('beforeend','<section class="panel lunarPage" data-lunar-page="overview"><h2>Your Lunar checklist</h2><div class="actions"><button class="btn secondary" data-lunar-go="planner">NEW ORDER</button><button class="btn secondary" data-lunar-go="publish">UPDATE SHOPIFY / DATES</button><button class="btn secondary" data-lunar-go="invoice">NEW INVOICE</button><button class="btn" data-lunar-go="deliveries">PARCEL ARRIVED</button></div><p>Order = planned. Invoice = billed. Shipment = dispatched. Parcel check = received.</p><label>Expected release week <select id="lunarWeekJump"></select></label><button class="btn secondary" id="lunarPrevWeek">PREVIOUS WEEK</button> <button class="btn secondary" id="lunarNextWeek">NEXT WEEK</button><input hidden type="date" id="lunarWeekChoice" value="'+lunarWeekStart(lunarDateToday())+'"><button class="btn secondary" id="lunarRefreshDashboard">REFRESH CHECKLIST</button> <button class="btn secondary" id="lunarDownloadWeek">DOWNLOAD WEEKLY CHECKLIST</button><div id="lunarWeeklySummary" role="status"></div><div id="lunarWeeklyList"></div><section id="lunarReadyList"></section><div id="lunarBillingHistory"></div><p>This checklist is saved in this browser and included in DOWNLOAD LUNAR BACKUP. It does not change Shopify, Crosslist or your overnight Flow.</p></section><section class="panel lunarPage" data-lunar-page="deliveries"><h2>Check a delivery</h2><p>1. Import the shipment file. 2. Count the parcel. 3. Save actual received quantities.</p><label class="btn filebtn">IMPORT SHIPMENT CSV<input id="lunarShipmentFile" type="file" accept=".csv" hidden></label><label>Or reopen <select id="lunarShipmentSelect"></select></label><div id="lunarShipmentMessage" role="status"></div><div id="lunarReceiptEditor"></div></section>');
+$('lunarInvoiceStep').insertAdjacentHTML('beforeend','<p>Shipping / credit-only invoices are recorded as billing documents, with no stock changes.</p><button class="btn secondary" data-lunar-go="deliveries">NEXT: CHECK A DELIVERY</button>');
+$('lunarWeekChoice').onchange=()=>{const date=lunarISO($('lunarWeekChoice').value);if(date)$('lunarWeekChoice').value=lunarWeekStart(date);lunarRenderDashboard();};
+$('lunarRefreshDashboard').onclick=lunarRenderDashboard;
+ $('lunarWeekJump').onchange=e=>{$('lunarWeekChoice').value=e.target.value;lunarRenderDashboard();};
+ for(const [id,days]of [['lunarPrevWeek',-7],['lunarNextWeek',7]])$(id).onclick=()=>{const d=pParseDate($('lunarWeekChoice').value);d.setDate(d.getDate()+days);$('lunarWeekChoice').value=pDateISO(d);lunarRenderDashboard();};
+$('lunarDownloadWeek').onclick=()=>{try{const week=$('lunarWeekChoice').value,rows=lunarWeeklyRows(week),header=['Release date','Code','Book','Ordered','Billed','Shipped','Good received','Damaged','Missing after count','Shipment IDs'];const csv='\ufeff'+[header,...rows.map(r=>[r.release,r.code,r.title,r.ordered??'',r.billed??'',r.shipped,r.good,r.damaged,r.missing,r.shipments.join('; ')])].map(row=>row.map(q).join(',')).join('\r\n');dl(new Blob([csv],{type:'text/csv'}),'ComicRox_Weekly_CHECKLIST_'+week+'.csv');}catch(e){$('lunarWeeklySummary').textContent=e.message;}};
+ $('lunarShipmentSelect').onchange=e=>{if(e.target.value)lunarReceiptEditor(e.target.value);else $('lunarReceiptEditor').innerHTML='';};
+$('lunarShipmentFile').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;const {shipment,reopened}=await lunarImportShipment(await f.text(),f.name);$('lunarShipmentMessage').textContent=(reopened?'Reopened saved shipment '+shipment.id+'. Your parcel checks were retained.':'Shipment '+shipment.id+' saved. Nothing is marked received yet. Count the parcel below.')+' No Shopify stock has changed.';lunarRenderShipments();lunarReceiptEditor(shipment.id);lunarRenderDashboard();}catch(err){$('lunarShipmentMessage').textContent=err.message;}finally{e.target.value='';}};
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.lunarGo)showLunarPage(b.dataset.lunarGo);
+ if(b.dataset.openShipment){showLunarPage('deliveries');lunarReceiptEditor(b.dataset.openShipment);}
+ if(b.dataset.deliveryDone){try{if(!confirm('Have you checked current stock and completed any needed eBay / Whatnot listing work? This marks the local checklist only; it changes no listings or stock.'))return;lunarCompleteDelivery(b.dataset.deliveryDone,b.dataset.deliveryCode);lunarRenderDashboard();}catch(err){alert(err.message);}}
+});
+// Simplify export history without discarding unresolved imports or their audit trail.
+lunarRenderHistory=function(){
+ lunarHeldOriginalHistory();lunarRenderDeferred();
+ const all=lunarReadState().exports.slice().reverse(),pending=all.filter(x=>x.outcome==='pending'),completed=all.filter(x=>x.outcome!=='pending');
+ const entry=x=>'<div><p><b>'+esc(x.fileName)+'</b> · '+esc(x.outcome)+'<br>'+esc(x.at||'Date unavailable')+' · '+x.codes.length+' products · '+esc(x.batchId||'batch unavailable')+' · '+esc(x.id)+'</p><button class="btn secondary" data-lunar-redownload="'+esc(x.id)+'">Download same file</button>'+(x.outcome==='pending'?' <button class="btn secondary" data-lunar-outcome="'+esc(x.id)+'" data-outcome="imported">All rows imported</button> <button class="btn secondary" data-lunar-outcome="'+esc(x.id)+'" data-outcome="not_imported">Not imported / cancelled</button><p>Partial import? Keep pending. Load a fresh Shopify export before retrying. Cancel only if none were imported.</p>':'')+'</div>';
+ $('lunarExportHistory').innerHTML='<h3>Awaiting import confirmation — '+pending.length+'</h3>'+pending.map(entry).join('')+'<details><summary>Completed export history — '+completed.length+'</summary>'+completed.map(entry).join('')+'</details>';
+};
+lunarRenderHistory();showLunarPage('overview');
+
+function lunarInvoiceReleaseFields(fresh,old,invoiceDate){
+ const stamp=invoiceDate?invoiceDate+'T00:00:00Z':'';
+ // Retain a later observed supplier revision; original billed dates remain in invoiceLines.
+ if(old?.releaseDateObservedAt&&lunarISO(old.release)&&(!stamp||Date.parse(old.releaseDateObservedAt)>Date.parse(stamp)))return {release:old.release,releaseDateObservedAt:old.releaseDateObservedAt};
+ return {release:fresh.release,releaseDateObservedAt:stamp};
+}
+
+document.head.insertAdjacentHTML('beforeend',`<style>
+#lunarWeeklyList table,#lunarReceiptEditor table{border-collapse:collapse;table-layout:fixed;width:100%}
+#lunarWeeklyList th,#lunarReceiptEditor th{position:static!important;text-align:left;background:#161b16;color:#fff;padding:12px 8px}
+#lunarWeeklyList td,#lunarReceiptEditor td{padding:12px 8px;vertical-align:top;border-bottom:1px solid #333;overflow-wrap:anywhere}
+#lunarWeeklyList th:first-child{width:44%}#lunarWeeklyList th:last-child{width:21%}
+#lunarWeeklySummary{margin:14px 0;color:#c6d5c6;line-height:1.5}
+#lunarReceiptEditor table{min-width:700px}#lunarReceiptEditor th:first-child{width:45%}
+#lunarReceiptEditor label{display:block;margin:12px 0}#lunarReceiptEditor input[type=checkbox]{width:auto}
+#lunarReadyList{margin-top:24px;padding-top:12px;border-top:1px solid #444}
+@media(max-width:700px){#lunarWeeklyList thead{display:none}#lunarWeeklyList tr{display:block;border:1px solid #444;border-radius:8px;margin:12px 0;padding:8px}#lunarWeeklyList td{display:block;border:0;padding:5px 4px}#lunarWeeklyList td[data-label]::before{content:attr(data-label) ': ';font-weight:bold;color:#b4c9b4}#lunarWeeklyList td:first-child{font-weight:bold;padding-bottom:10px}}
+</style>`);
+
+function lunarShipmentInvoiceSummary(shipment){
+ const invoices=new Map();for(const b of loadLunarBatches())if(b.invoiceId){if(!invoices.has(b.invoiceId))invoices.set(b.invoiceId,new Map());for(const r of b.records||[])invoices.get(b.invoiceId).set(r.code,Number(r.invoiceQty??r.qty));}
+ const exact=[],partial=[];for(const [id,items]of invoices){if(shipment.items.every(r=>items.get(r.code)===r.qty)&&items.size===shipment.items.length)exact.push(id);else if(shipment.items.some(r=>items.has(r.code)))partial.push(id);}
+ if(exact.length)return 'Product codes and quantities match merchandise invoice '+exact.join(', ')+'. Invoice and shipment are still separate records.';
+ if(partial.length)return 'Some products appear on invoice '+partial.join(', ')+'. Quantities / coverage differ: check the documents; this is not a confirmed full match.';
+ return 'Matching merchandise invoice has not been imported yet. You can still count and check this parcel.';
 }
