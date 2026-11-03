@@ -1,0 +1,52 @@
+COMICROX — FRESH TIKTOK LOAD — 3 NOVEMBER 2026
+
+INSTALL
+Keep a spare copy of ComicRox-TikTok.js in your current tool folder.
+Replace ONLY that file with the supplied ComicRox-TikTok.js.
+Open TikTok Sync in your normal browser and press Ctrl+F5.
+Do not clear browser data. No Shopify, Cloudflare or server changes are required.
+
+YOUR FRESH LOAD
+1. Verify TikTok Live, Draft, Failed and Deactivated are ALL empty.
+2. In the new "Starting again with an empty TikTok catalogue?" section:
+   DOWNLOAD TIKTOK BACKUP, tick the empty-catalogue confirmation, then
+   START / CONTINUE FRESH LOAD.
+3. Extract products_export_1.csv from your Shopify ZIP. Load that CSV into
+   Shopify master CSV. No TikTok catalogue export is needed for this fresh load.
+4. Load the supplied current TikTok XLSX under "Optional current create template".
+   This must be the Upload in bulk CREATE template, not a Bulk edit export.
+5. Check your parcel profiles and confirm packing. Singles default to the
+   previously supplied 145g / 33 x 21 x 0.5cm; confirm those suit your packing.
+   Graded books and bundles require suitable packed measurements.
+6. REVIEW FRESH CATALOGUE LOAD. Check Ready additions and Held.
+   Fresh loads always exclude preorders and future release dates, even if an
+   older available-stock override was saved. They can be added after release.
+   Zero/negative stock, draft and unpublished Shopify products cannot be added.
+7. Download additions XLSX. Upload that file in TikTok Seller Center:
+   Products -> Bulk actions -> Upload in bulk (CREATE, not bulk EDIT).
+   Review TikTok validation and publication results there.
+8. Record the successful seller_sku values against that import run in the tool.
+   Use the workbook's seller_sku values, not TikTok's numeric product IDs.
+   Pending rows remain blocked. Release only confirmed failed/not-uploaded rows.
+
+OLD HISTORY IS RETAINED
+Starting a fresh catalogue separates old upload history from the new load.
+It does not mark old successes as failures or delete saved upload files, SKU
+mappings, packing settings, identity decisions, or any other tool's data.
+Pending/successful rows in the NEW catalogue stay protected against duplicates.
+After refreshing the page with nothing uploaded yet, continue the same fresh
+load; do not start another catalogue just to retry.
+
+AFTER THIS FIRST LOAD
+Use normal Full catalogue comparison with current Shopify and TikTok exports
+for ongoing additions, stock checks and cleanup. Do not confirm an empty
+catalogue when products now exist. Add newly released/received books after
+Shopify has updated; never include stock merely because a date has arrived.
+Selected products mode also retains duplicate protection for the new catalogue.
+
+Only if you delete another entire catalogue in future, use the separate
+"Deleted a later catalogue as well?" control after downloading a new backup
+and confirming that all statuses are empty again.
+
+This creates local upload files. It does not upload to TikTok, publish products,
+synchronise sales, or change Shopify quantities automatically.
