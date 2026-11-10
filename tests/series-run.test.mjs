@@ -72,3 +72,32 @@ test('third tab remains readable on desktop/mobile and changing series requires 
  await page.locator('#srSeries').fill('Batman');assert.equal((await page.evaluate(()=>ComicRoxSeriesRunTest.getState())).rows[0].title,'Spawn Vol 1 #2 Image Comics NM');page.once('dialog',d=>d.accept());await page.locator('#srBuild').click();assert.match((await page.evaluate(()=>ComicRoxSeriesRunTest.getState())).rows[0].title,/^Batman Vol 1 #2/);assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });
+async function mockBrowsing(page){
+ const uploads=[];
+ await page.route('**/api/photos/import',route=>{const data=route.request().postDataJSON();return route.fulfill({json:{ok:true,photo:{path:'C:/photos/Selected_Imports/'+data.name,name:'copy-'+data.name,displayName:data.name,browserSelected:true}}});});
+ await page.route('**/api/photo?*',route=>route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1200"/>'}));
+ await page.route('**/api/upload-shopify',route=>{uploads.push(route.request().postDataJSON().paths);return route.fulfill({json:{ok:true,message:'uploaded'}});});
+ await page.route('**/api/refresh-shopify',route=>route.fulfill({json:['a.jpg','b.jpg','c.jpg'].map(name=>({Alt:'copy-'+name,Filename:'copy-'+name,URL:'https://cdn.test/'+name}))}));
+ return uploads;
+}
+const localPhotos=()=>['a.jpg','b.jpg','c.jpg'].map(name=>({name,mimeType:'image/jpeg',buffer:Buffer.from([255,216,255,0])}));
+test('laptop browse assigns directly to an issue; reorder/remove controls determine main CSV image and only used photos upload',async()=>{
+ const {page,errors}=await setup();try{
+ const uploads=await mockBrowsing(page);await prepare(page,'2');await page.locator('[data-sr-row="issue-2"][data-sr-field="imageMode"]').selectOption('own');
+ await page.locator('[data-sr-browse-row="issue-2"]').setInputFiles(localPhotos());await page.waitForFunction(()=>ComicRoxSeriesRunTest.getState().rows[0].photos.length===3);assert.equal(uploads.length,0);
+ await page.locator('button[data-sr-photo-row="issue-2"][data-sr-photo-index="0"][data-sr-photo-action="right"]').click();await page.locator('button[data-sr-photo-row="issue-2"][data-sr-photo-index="2"][data-sr-photo-action="remove"]').click();
+ let photos=await page.evaluate(()=>ComicRoxSeriesRunTest.getState().rows[0].photos);assert.deepEqual(photos.map(p=>p.displayName),['b.jpg','a.jpg']);
+ page.once('dialog',d=>d.accept());await page.locator('#srUploadUsedPhotos').click();await page.waitForFunction(()=>ComicRoxSeriesRunTest.getState().rows[0].photos.every(p=>p.url&&p.imageSize>=500));assert.deepEqual(uploads[0],['C:/photos/Selected_Imports/b.jpg','C:/photos/Selected_Imports/a.jpg']);
+ await page.locator('#srUploadUsedPhotos').click();assert.equal(uploads.length,1);await page.locator('[data-sr-row="issue-2"][data-sr-field="imageConfirmed"]').check();await load(page);
+ const d=page.waitForEvent('download');await page.locator('#srExport').click();const f=await d;const parsed=await page.evaluate(csv=>parseCsv(csv.replace(/^\uFEFF/,'')),fs.readFileSync(await f.path(),'utf8'));assert.equal(parsed[1][19],'https://cdn.test/b.jpg');assert.equal(parsed[2][19],'https://cdn.test/a.jpg');assert.equal(parsed[2][20],'2');assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
+test('Standard Batch can browse a directory selection, build before upload and reorder used photos with matching image links',async()=>{
+ const {page,errors}=await setup();try{
+ const uploads=await mockBrowsing(page);await page.locator('[data-tab="standardPane"]').click();await page.locator('#standardBrowsePhotos').setInputFiles(localPhotos());await page.waitForFunction(()=>photos.length===3);assert.equal(uploads.length,0);
+ await page.locator('#bulk').fill('1 NM 5 x3');await page.locator('#build').click();assert.equal(await page.evaluate(()=>records.length),1);assert.deepEqual(await page.evaluate(()=>records[0].photos.map(p=>p.displayName)),['a.jpg','b.jpg','c.jpg']);
+ await page.locator('[data-standard-photo-row="0"][data-standard-photo-index="0"][data-standard-photo-action="right"]').click();await page.locator('[data-standard-photo-row="0"][data-standard-photo-index="2"][data-standard-photo-action="remove"]').click();assert.deepEqual(await page.evaluate(()=>records[0].photos.map(p=>p.displayName)),['b.jpg','a.jpg']);
+ page.once('dialog',d=>d.accept());await page.locator('#standardUploadUsed').click();await page.waitForFunction(()=>records[0].shops.every(p=>p?.URL));assert.deepEqual(uploads[0],['C:/photos/Selected_Imports/b.jpg','C:/photos/Selected_Imports/a.jpg']);
+ await page.locator('[data-standard-photo-row="0"][data-standard-photo-index="1"][data-standard-photo-action="left"]').click();assert.equal(await page.evaluate(()=>records[0].photos[0].displayName),'a.jpg');assert.equal(await page.evaluate(()=>records[0].shops[0].URL),'https://cdn.test/a.jpg');assert.equal(await page.evaluate(()=>records[0].shop.URL),'https://cdn.test/a.jpg');assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});

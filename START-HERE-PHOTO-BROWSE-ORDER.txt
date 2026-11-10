@@ -1,0 +1,59 @@
+COMICROX — BROWSE, REORDER AND UPLOAD USED PHOTOS — 10 NOVEMBER 2026
+
+INSTALL IN YOUR CURRENT LOCAL TOOL FOLDER
+1. In Series / Run, download a draft backup under Step 1 -> Draft backups.
+   In Standard Batch, SAVE REVIEW BACKUP if you have a review in progress.
+2. Close the tool's PowerShell server window.
+3. Keep spare copies of the existing four application files, then copy the four
+   supplied JS/PS1 files into the SAME running tool folder, replacing them.
+   This package includes the complete Series / Run feature; no HTML or settings
+   replacement is needed. Leave Lunar/TikTok files and browser data alone.
+4. Restart using START-COMICROX-TOOL.bat and press Ctrl+F5.
+   Series / Run restores its draft automatically. For a Standard review, use
+   RESTORE SAVED REVIEW or IMPORT REVIEW BACKUP if needed after the page reload.
+
+SERIES / RUN
+1. For an issue, choose My own photos -> BROWSE LAPTOP PHOTOS.
+2. Select files from any laptop folder. Ctrl-click selects several files.
+   They are added to this issue's existing photos, up to 12 photos per issue.
+3. Use the arrows under each photo to reorder them, or Remove unwanted ones.
+   The FIRST photo is marked MAIN PHOTO and becomes the first CSV image.
+4. Confirm the images show the right book/edition after changing the selection.
+5. In Step 3, click UPLOAD USED PHOTOS TO SHOPIFY. Only photos currently assigned
+   to own-photo issue rows are included; removed/unassigned photos are excluded.
+   Already-recorded Shopify links are reused, so these do not upload again.
+6. If processing continues, use REFRESH USED PHOTO LINKS until ready.
+   Then use the usual full Shopify-product duplicate check and download the CSV.
+
+STANDARD BATCH
+1. Click BROWSE LAPTOP PHOTOS near the beginning of the Standard tab.
+   Choose Replace current selection or Add to current selection as appropriate.
+2. Select your files. Enter condition/price/x-photo-count lines and BUILD REVIEW.
+   You can build this browsed-photo review before uploading to Shopify Files.
+3. Use the new arrows/Remove controls beside a book's review photos.
+   The first photo is the MAIN PHOTO. Reordering keeps existing Shopify image
+   links paired with their original photos. At least one photo remains per book.
+4. At the end of the review, click UPLOAD USED PHOTOS TO SHOPIFY.
+   Only photos still assigned to review books and missing image links are sent.
+5. Refresh used photo links if needed, then use your usual Shopify CSV export.
+   The original recent-photo-folder and upfront-upload route is still available.
+
+WHAT BROWSING DOES
+A browser cannot give Shopify a private laptop file path. The selected files are
+copied into Comic_Photos/Selected_Imports as private local working copies.
+Your originals are not edited, moved or deleted. Identical content reuses the
+same working copy; original filenames remain visible in the tool.
+Selecting files does NOT send them to Shopify. The separate UPLOAD USED PHOTOS
+button does that after you have assigned and ordered them.
+JPG, PNG and WebP are supported, up to 15 MB per image; choose at most 200 files
+and 500 MB per browser selection. HEIC/PDF/GIF need conversion first.
+An interrupted selection can leave unused local working copies, but these are
+not uploaded or added to a product unless you assign them in the tool.
+
+TESTING
+Browser tests cover direct laptop selection in both tabs, grouping before
+upload, reorder/remove actions, main/extra CSV image order, reused image links,
+and only-used-photo requests. Existing workflow regressions also passed.
+PowerShell tests cover private-copy placement, filename isolation, content
+hash deduplication, supported image signatures and server syntax.
+No live Shopify upload or Windows installation was performed in this workspace.

@@ -71,6 +71,15 @@ while($listener.IsListening){
     if($path -eq '/ComicRox-Usage.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Usage.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Price-Checker.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Price-Checker.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Series-Run.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Series-Run.js'))) 'application/javascript; charset=utf-8'; continue }
+    if($path -eq '/api/photos/import' -and $ctx.Request.HttpMethod -eq 'POST'){
+      try {
+        $origin=$ctx.Request.Headers['Origin']
+        if($origin -and $origin -ne ('http://localhost:'+$Port)){throw 'Open photo browsing from the local ComicRox tool.'}
+        if($ctx.Request.ContentLength64 -lt 1 -or $ctx.Request.ContentLength64 -gt 22020096 -or $ctx.Request.ContentType -notmatch '^application/json'){throw 'Choose an image up to 15 MB.'}
+        $body=(Read-Body $ctx.Request)|ConvertFrom-Json
+        Send-Json $ctx (Import-ComicRoxLocalPhoto ([string]$body.name) ([string]$body.base64))
+      } catch { Send-Json $ctx @{ok=$false;error=$_.Exception.Message} 400 }; continue
+    }
     if($path -eq '/api/series-run/covers' -and $ctx.Request.HttpMethod -eq 'POST'){
       try {
         $origin=$ctx.Request.Headers['Origin']

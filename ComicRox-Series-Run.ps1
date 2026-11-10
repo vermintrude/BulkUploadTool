@@ -39,3 +39,28 @@ function Find-ComicRoxSeriesCovers([string]$series,[string]$issue) {
   }
   return @{ok=$true;candidates=@($candidates);query=$query;readOnly=$true}
 }
+
+# Copy a browser-selected photo into the configured photo root. Never accepts a
+# destination path and never uploads to Shopify. Originals on the laptop stay intact.
+function Import-ComicRoxLocalPhoto([string]$name,[string]$base64) {
+  $name=($name -split '[\\/]')[-1]
+  if(!$name -or $name.Length -gt 255 -or $name -match '[\x00-\x1f]'){throw 'Choose an image with a valid filename.'}
+  $ext=[IO.Path]::GetExtension($name).ToLowerInvariant()
+  if($ext -notin @('.jpg','.jpeg','.png','.webp')){throw 'Choose JPG, PNG or WebP photos.'}
+  if(!$base64 -or $base64.Length -gt 20971520){throw 'Each selected photo must be 15 MB or smaller.'}
+  try{$bytes=[Convert]::FromBase64String($base64)}catch{throw 'The selected photo could not be read.'}
+  if(!$bytes.Length -or $bytes.Length -gt 15728640){throw 'Each selected photo must be 15 MB or smaller.'}
+  $valid=$false
+  if($ext -in @('.jpg','.jpeg')){$valid=$bytes.Length -ge 3 -and $bytes[0] -eq 255 -and $bytes[1] -eq 216 -and $bytes[2] -eq 255;$ext='.jpg'}
+  elseif($ext -eq '.png'){$valid=$bytes.Length -ge 8 -and [BitConverter]::ToString($bytes,0,8) -eq '89-50-4E-47-0D-0A-1A-0A'}
+  elseif($ext -eq '.webp'){$valid=$bytes.Length -ge 12 -and [Text.Encoding]::ASCII.GetString($bytes,0,4) -eq 'RIFF' -and [Text.Encoding]::ASCII.GetString($bytes,8,4) -eq 'WEBP'}
+  if(!$valid){throw 'The selected file does not match its JPG, PNG or WebP extension.'}
+  $sha=[Security.Cryptography.SHA256]::Create()
+  try{$hash=([BitConverter]::ToString($sha.ComputeHash($bytes))).Replace('-','').ToLowerInvariant()}finally{$sha.Dispose()}
+  $folder=Join-Path $PhotoRoot 'Selected_Imports'
+  [IO.Directory]::CreateDirectory($folder)|Out-Null
+  $storedName='CR-photo-'+$hash+$ext;$target=Join-Path $folder $storedName
+  if(!(Test-Path -LiteralPath $target)){[IO.File]::WriteAllBytes($target,$bytes)}
+  $file=Get-Item -LiteralPath $target
+  return @{ok=$true;photo=@{name=$storedName;displayName=$name;path=$file.FullName;modified=$file.LastWriteTime.ToString('o');size=$file.Length;browserSelected=$true}}
+}

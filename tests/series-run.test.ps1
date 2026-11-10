@@ -34,3 +34,18 @@ $before=$script:calls.Count
 try{Find-ComicRoxSeriesCovers 'Spawn' '2; malicious'|Out-Null;throw 'Invalid issue was accepted'}catch{Assert ($_.Exception.Message -match 'valid issue') 'Invalid issue must fail validation'}
 Assert ($script:calls.Count -eq $before) 'Invalid input must not make a network request'
 'PowerShell parsing, read-only search, filters, image URL upgrades and token cache passed.'
+$PhotoRoot=Join-Path ([IO.Path]::GetTempPath()) ('comicrox-photo-test-'+[guid]::NewGuid().ToString())
+try {
+ $png=[Convert]::FromBase64String('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jf1kAAAAASUVORK5CYII=')
+ $data=[Convert]::ToBase64String($png)
+ $one=Import-ComicRoxLocalPhoto '../../sample.png' $data
+ $two=Import-ComicRoxLocalPhoto 'different-name.png' $data
+ Assert ($one.photo.path -eq $two.photo.path) 'Content-identical imports must reuse the same private local copy'
+ Assert ($one.photo.path.StartsWith((Join-Path $PhotoRoot 'Selected_Imports'))) 'Browser imports must stay in the configured photo folder'
+ Assert ($one.photo.displayName -eq 'sample.png') 'Original basename should be shown without directory traversal'
+ Assert ((Get-ChildItem -LiteralPath (Join-Path $PhotoRoot 'Selected_Imports')).Count -eq 1) 'Repeated imports must not create extra copies'
+ Assert (([IO.File]::ReadAllBytes($one.photo.path)).Length -eq $png.Length) 'Original bytes must be retained'
+ try {Import-ComicRoxLocalPhoto 'bad.jpg' $data|Out-Null;throw 'Bad magic was accepted'}catch{Assert ($_.Exception.Message -match 'does not match') 'Mismatched image type must be rejected'}
+ try {Import-ComicRoxLocalPhoto 'bad.txt' $data|Out-Null;throw 'Unsupported type was accepted'}catch{Assert ($_.Exception.Message -match 'Choose JPG') 'Unsupported extensions must be rejected'}
+ 'Private local photo import, filename isolation, deduplication and validation passed.'
+} finally {if(Test-Path -LiteralPath $PhotoRoot){Remove-Item -LiteralPath $PhotoRoot -Recurse -Force}}
