@@ -183,6 +183,18 @@
  $s('srCheck').onclick=()=>action('srExportStatus',async()=>showPlan(await exportPlan()));$s('srExport').onclick=()=>action('srExportStatus',downloadExport);
  $s('srHistory').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.srRedownload||b.dataset.srOutcome,x=state.exports.find(x=>x.id===id);if(!x)return;if(b.dataset.srRedownload){dl(new Blob([x.csv],{type:'text/csv'}),'ComicRox_Series_Run_'+x.id+'.csv');return;}if(confirm(b.dataset.srStatus==='imported'?'Confirm ALL rows in this file imported successfully?':'Confirm NONE of the rows were imported? Leave partial successes pending.')){x.status=b.dataset.srStatus;persist();renderHistory();master=null;}};
  $s('srBackup').onclick=()=>dl(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),'ComicRox-Series-Run-Backup.json');$s('srRestore').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;const next=validate(JSON.parse(await f.text()));if(!confirm('Replace only your Series / Run draft with this backup? Standard and Lunar work are unchanged.'))return;state=next;save();master=null;resetSkipConfirmation();for(const [id,k]of Object.entries(commonFields))$s(id).value=state.common[k]||'';render();message('srStatus','Series / Run draft restored. Load a fresh Shopify export before downloading listings.');}catch(e){message('srStatus',e.message);}finally{e.target.value='';}};
+ // One preparation action uploads assigned local photos before building the CSV.
+ $s('srExport').textContent='PREPARE SHOPIFY FILE';
+ $s('srExport').onclick=()=>action('srExportStatus',async()=>{
+  if(catalogueChecked()&&(!master||!$s('srMasterComplete').checked))throw Error('Load your full Shopify export and confirm ALL products first, or choose to skip the catalogue check.');
+  if(!catalogueChecked()&&!$s('srSkipCheckConfirm').checked)throw Error('Confirm your choice to skip the Shopify catalogue check first.');
+  const missing=state.rows.filter(r=>r.imageMode==='own').flatMap(r=>r.photos).filter(p=>!p.url);
+  if(missing.length){await uploadPhotos('srExportStatus');if(state.rows.filter(r=>r.imageMode==='own').flatMap(r=>r.photos).some(p=>!p.url)){message('srExportStatus','Photos are not ready yet. Use PREPARE SHOPIFY FILE again after processing finishes.');return;}}
+  await downloadExport();
+ });
+ const photoTools=document.createElement('div');const photoHeading=$s('srUploadUsedPhotos').previousElementSibling.previousElementSibling;photoHeading.before(photoTools);let photoNode=photoHeading;while(photoNode&&photoNode.id!=='srCheck'){const next=photoNode.nextSibling;photoTools.append(photoNode);photoNode=next;}
+ const advanced=document.createElement('details');advanced.innerHTML='<summary>Photo upload and link troubleshooting</summary>';photoTools.before(advanced);advanced.append(photoTools);
+ const hint=document.createElement('p');hint.textContent='Next: PREPARE SHOPIFY FILE uploads your assigned laptop photos, checks the books and downloads ready listings. Import that file in Shopify, then record the result below.';$s('srExport').before(hint);
  render();if(state.readError)message('srStatus','Stored draft could not be read: '+state.readError+'. Restore a checked Series / Run backup.');
  window.ComicRoxSeriesRunTest={parseIssues,makeTitle,makeDescription,exportPlan,loadMaster,identity,skuFor,getState:()=>JSON.parse(JSON.stringify(state)),getMaster:()=>master};
 })();

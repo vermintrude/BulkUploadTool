@@ -87,7 +87,7 @@ test('laptop browse assigns directly to an issue; reorder/remove controls determ
  await page.locator('[data-sr-browse-row="issue-2"]').setInputFiles(localPhotos());await page.waitForFunction(()=>ComicRoxSeriesRunTest.getState().rows[0].photos.length===3);assert.equal(uploads.length,0);
  await page.locator('button[data-sr-photo-row="issue-2"][data-sr-photo-index="0"][data-sr-photo-action="right"]').click();await page.locator('button[data-sr-photo-row="issue-2"][data-sr-photo-index="2"][data-sr-photo-action="remove"]').click();
  let photos=await page.evaluate(()=>ComicRoxSeriesRunTest.getState().rows[0].photos);assert.deepEqual(photos.map(p=>p.displayName),['b.jpg','a.jpg']);
- page.once('dialog',d=>d.accept());await page.locator('#srUploadUsedPhotos').click();await page.waitForFunction(()=>ComicRoxSeriesRunTest.getState().rows[0].photos.every(p=>p.url&&p.imageSize>=500));assert.deepEqual(uploads[0],['C:/photos/Selected_Imports/b.jpg','C:/photos/Selected_Imports/a.jpg']);
+ await page.locator('summary').filter({hasText:'Photo upload and link troubleshooting'}).click();page.once('dialog',d=>d.accept());await page.locator('#srUploadUsedPhotos').click();await page.waitForFunction(()=>ComicRoxSeriesRunTest.getState().rows[0].photos.every(p=>p.url&&p.imageSize>=500));assert.deepEqual(uploads[0],['C:/photos/Selected_Imports/b.jpg','C:/photos/Selected_Imports/a.jpg']);
  await page.locator('#srUploadUsedPhotos').click();assert.equal(uploads.length,1);assert.equal(await page.locator('[data-sr-row="issue-2"][data-sr-field="imageConfirmed"]').count(),0);await load(page);
  const d=page.waitForEvent('download');await page.locator('#srExport').click();const f=await d;const parsed=await page.evaluate(csv=>parseCsv(csv.replace(/^\uFEFF/,'')),fs.readFileSync(await f.path(),'utf8'));assert.equal(parsed[1][19],'https://cdn.test/b.jpg');assert.equal(parsed[2][19],'https://cdn.test/a.jpg');assert.equal(parsed[2][20],'2');assert.deepEqual(errors,[]);
  }finally{await page.close();}
@@ -125,5 +125,12 @@ test('only online covers require edition confirmation; own-photo rows keep image
  const {page,errors}=await setup();try{
  await prepare(page,'2');await images(page);await load(page);await page.locator('[data-sr-row="issue-2"][data-sr-field="imageConfirmed"]').uncheck();let plan=await page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan());assert.match(plan.held[0].reason,/confirm online cover/);
  await page.locator('[data-sr-row="issue-2"][data-sr-field="imageMode"]').selectOption('own');assert.equal(await page.locator('[data-sr-row="issue-2"][data-sr-field="imageConfirmed"]').count(),0);plan=await page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan());assert(plan.held.length===1);assert.doesNotMatch(plan.held[0].reason,/confirm.*edition/);assert.match(plan.held[0].reason,/photo links/);assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
+
+test('Prepare Shopify file uploads only assigned local photos and downloads without separate upload steps',async()=>{
+ const {page,errors}=await setup();try{
+ const uploads=await mockBrowsing(page);await prepare(page,'2');await page.locator('[data-sr-row="issue-2"][data-sr-field="imageMode"]').selectOption('own');await page.locator('[data-sr-browse-row="issue-2"]').setInputFiles(localPhotos().slice(0,2));await page.waitForFunction(()=>ComicRoxSeriesRunTest.getState().rows[0].photos.length===2);await load(page);
+ assert.equal(await page.locator('#srUploadUsedPhotos').isVisible(),false);assert.equal(await page.locator('#srExport').isVisible(),true);page.once('dialog',d=>d.accept());const download=page.waitForEvent('download');await page.locator('#srExport').click();const file=await download;assert.equal(uploads.length,1);assert.match(fs.readFileSync(await file.path(),'utf8'),/https:\/\/cdn.test\/a.jpg/);assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });

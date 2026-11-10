@@ -72,3 +72,10 @@ test('Product Data refresh updates saved batches and planner date evidence witho
  assert.equal(result.cache[code].iso,'2026-11-11');assert(result.batches.every(b=>b.records[0].release==='2026-11-11'));assert.deepEqual(result.batches.map(b=>String(b.records[0].qty)),['5','2']);assert.equal((await build(page,snapshot(),result.sources)).updates.length,1);assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });
+
+test('guided publish keeps current actions visible, clears stale batch messages and preserves saved work',async()=>{
+ const {page,errors}=await setup();try{
+ await page.evaluate(()=>{saveLunarBatches([{id:'first',weekKey:'2026-11-23',records:[]},{id:'second',weekKey:'2026-11-30',records:[]}]);document.querySelector('[data-tab="wholesalePane"]').click();openSavedLunarBatch('first');showLunarPage('publish');$('wholesaleExportStatus').textContent='Downloaded 18 old products';openSavedLunarBatch('second');showLunarPage('publish');});
+ assert.equal(await page.locator('#wholesaleExportStatus').textContent(),'');assert.equal(await page.locator('#exportWholesale').isVisible(),true);assert.equal(await page.locator('#lunarDateCheck').isVisible(),false);assert.match(await page.locator('#lunarNextAction').textContent(),/2026-11-30/);assert.equal(await page.evaluate(()=>loadLunarBatches().length),2);assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});

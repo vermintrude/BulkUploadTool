@@ -669,3 +669,35 @@ function lunarShipmentInvoiceSummary(shipment){
  if(partial.length)return 'Some products appear on invoice '+partial.join(', ')+'. Quantities / coverage differ: check the documents; this is not a confirmed full match.';
  return 'Matching merchandise invoice has not been imported yet. You can still count and check this parcel.';
 }
+
+// Guided publishing: current work first; maintenance remains available on demand.
+(function(){
+ const step=$('lunarPublishStep'),exportPanel=$('exportWholesale').closest('section');
+ step.insertAdjacentHTML('afterbegin','<h2>3. Prepare your Shopify listings</h2><p id="lunarNextAction" role="status"></p>');
+ step.querySelector('.workflowHint').hidden=true;
+ exportPanel.querySelector('h2').textContent='Download this batch';
+ exportPanel.querySelector('.wholesaleNote').hidden=true;
+ function fold(node,label){const d=document.createElement('details');d.className='lunarOptional';const summary=document.createElement('summary');summary.textContent=label;d.append(summary);node.before(d);d.append(node);return d;}
+ fold($('lunarExportHistory'),'Previous downloads and import confirmations');
+ fold($('lunarDatePanel'),'Maintenance: update existing Shopify release dates');
+ fold($('lunarExisting'),'Existing Shopify products');
+ step.insertBefore(exportPanel,$('lunarExisting').parentElement);
+ const outcome=document.createElement('div');outcome.id='lunarCurrentOutcome';exportPanel.append(outcome);
+ function refresh(){
+  const b=lunarActive();
+  $('lunarNextAction').textContent=b?'Current batch: '+(b.invoiceId?'invoice '+b.invoiceId:'saved planning week '+b.weekKey)+'. Check Shopify below, then download your listings.':'Open a saved batch to continue.';
+  const dates=[...new Set(wholesaleRecords.filter(r=>!r.excludeFromExport).map(r=>lunarISO(r.release)).filter(Boolean))].sort();if(b&&dates.length)$('lunarNextAction').textContent+=' Release dates in this batch: '+dates.join(', ')+'. The saved week is a preparation label, not a confirmed arrival date.';
+  const runs=lunarReadState().exports.filter(x=>x.batchId===activeLunarBatchId&&x.outcome==='pending');
+  outcome.replaceChildren();
+  if(runs.length){const h=document.createElement('h3');h.textContent='Next: import your downloaded file in Shopify';outcome.append(h);for(const run of runs){const line=document.createElement('p');line.textContent=run.fileName+' — '+run.codes.length+' products';const button=document.createElement('button');button.className='btn';button.textContent='CONFIRM ALL ROWS IMPORTED';button.onclick=()=>{const original=document.querySelector('[data-lunar-outcome="'+run.id+'"]');original?.click();};outcome.append(line,button);}}
+ }
+ const previousShow=showLunarPage;let displayedBatch;
+ showLunarPage=function(page){previousShow(page);if(displayedBatch!==activeLunarBatchId){$('wholesaleExportStatus').textContent='';$('lunarPlan').textContent='';displayedBatch=activeLunarBatchId;}refresh();if(page==='publish'){try{lunarMasterFeedback();}catch(e){$('lunarMasterStatus').textContent=e.message;}step.scrollIntoView({block:'start'});}};
+ const previousHistory=lunarRenderHistory;lunarRenderHistory=function(){previousHistory();refresh();};
+ const previousPlan=lunarShowPlan;lunarShowPlan=function(plan){previousPlan(plan);$('lunarPlan').insertAdjacentHTML('beforeend',plan.held.length?'<button class="btn secondary" id="lunarFixReview">FIX HELD BOOKS IN REVIEW</button>':'');if($('lunarFixReview'))$('lunarFixReview').onclick=()=>showLunarPage('review');};
+ const prevSummary=wholesaleSummary;wholesaleSummary=function(){prevSummary();document.querySelectorAll('#wholesaleRows input[data-wf="cleanTitle"]').forEach(input=>{if(input.dataset.guidedCount)return;if(input.value===undefined)return;if(input.closest('td')&&/title/i.test(input.outerHTML)){input.dataset.guidedCount='1';const count=document.createElement('small');input.after(count);const update=()=>{count.textContent=input.value.length+' / 80 characters';count.style.color=input.value.length>80?'#ffbf00':'';};input.addEventListener('input',update);update();}});};
+ const savedRender=renderSavedLunarBatches;renderSavedLunarBatches=function(){savedRender();document.querySelectorAll('#savedBatchList .savedBatchTitle').forEach(title=>{title.textContent=title.textContent.replace('Expected delivery w/c','Saved preparation week w/c');});};renderSavedLunarBatches();
+ for(const [page,label] of [['planner','PREPARE PRE-ORDERS'],['invoice','PROCESS AN INVOICE'],['deliveries','RECEIVE A DELIVERY']]){const button=document.querySelector('[data-lunar-go="'+page+'"]');if(button)button.textContent=label;}
+ $('lunarGuide').insertAdjacentHTML('beforeend','<p>Saved planning weeks are snapshots. Individual release dates can change after preparation.</p>');
+ refresh();
+})();

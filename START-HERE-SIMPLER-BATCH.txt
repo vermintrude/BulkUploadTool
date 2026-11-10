@@ -1,0 +1,23 @@
+ComicRox simpler batch screens — 10 November 2026
+
+INSTALL
+1. Finish any running upload. Download Lunar and Series / Run backups.
+2. Close the tool browser tab. Keep using your existing tool folder and browser address.
+3. Copy the TWO .js files in this zip into that folder, replacing the same names.
+4. Reopen the tool and press Ctrl+F5.
+No HTML, server, settings or storage files are replaced.
+
+LUNAR
+Check Shopify & Export now places this batch's download action immediately after the Shopify check. Old downloads, existing-product detail and date maintenance are collapsed. The current batch's pending download and confirmation appear below its export buttons. Changing batches clears old export feedback. Held books have a return-to-review button. Review titles display an 80-character counter. Saved weeks are labelled preparation weeks; current product release dates are shown separately.
+
+SERIES / RUN
+Review issues and choose your catalogue-check option as before. PREPARE SHOPIFY FILE uploads assigned laptop photos that do not yet have Shopify links, refreshes links, then downloads ready listings. Upload confirmation is still explicit. If Shopify is still processing photos, the message asks you to retry. Manual photo tools remain under troubleshooting.
+
+NOT YET INCLUDED
+Direct Shopify catalogue checking; automatic regrouping of saved batches; a complete replacement of all Lunar review/invoice/receipt screens. Fresh Shopify exports are still required in Lunar. Existing pending import, duplicate, date and image protections remain.
+
+TESTING
+Exact shipping files: 46 browser checks passed; one optional private invoice test skipped. No live Shopify product changes were made during development.
+
+ROLLBACK
+Keep copies of your previous TWO .js files and restore them if needed. Do not clear browser storage or restore an older backup merely to change the screens.
