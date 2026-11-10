@@ -59,3 +59,25 @@ customer that the requested search found nothing.
   while a search is still loading or has failed technically.
 
 Status: saved for the next website update; not implemented or published.
+
+## Clear current action and local feedback — requested 7 November 2026
+
+Status: pending; recorded after workspace access recovered on 10 November.
+
+- Number steps and highlight the next required action on Check Shopify & Export.
+- Separate the active batch from old pending/completed exports and the independent
+  release-date update controls; preserve all outcomes and duplicate protections.
+- Show save/download success and errors beside the clicked button, including
+  Save Parcel Check, so a message above the viewport cannot look like no action.
+- A checked parcel should say View/Edit Parcel Check, not imply another check is due.
+
+## Shopify due-for-release list versus confirmed receipts — requested 7 November 2026
+
+Status: pending; not implemented in the Series / Run release.
+
+- Load current Shopify preorder/release dates; select a date such as 11 November.
+- List due titles, title count, and expected copies where supported by Lunar records.
+- Match by product code to actual saved shipment receipt counts; highlight
+  uncounted parcels, outstanding copies, damage and conflicting dates separately.
+- Do not treat Shopify inventory quantities as proof of receipt or original order quantity.
+- Keep the existing Lunar expected-week view and provide a downloadable comparison.

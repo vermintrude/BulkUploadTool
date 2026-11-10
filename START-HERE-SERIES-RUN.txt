@@ -1,0 +1,89 @@
+COMICROX — SERIES / RUN — 10 NOVEMBER 2026
+
+INSTALL ON YOUR PC — NOT SHOPIFY OR CLOUDFLARE
+1. Save a backup of any Standard Batch review you are working on.
+   Keep your normal Lunar / TikTok backups too.
+2. Close the tool's PowerShell server window.
+3. In your CURRENT running BulkUploadTool folder, keep spare copies of:
+   ComicRox-Server.ps1
+   ComicRox-Resume.js
+4. Copy the FOUR supplied application files into that same folder:
+   ComicRox-Server.ps1        (replace)
+   ComicRox-Resume.js         (replace)
+   ComicRox-Series-Run.ps1    (new)
+   ComicRox-Series-Run.js     (new)
+   Leave your HTML, Shopify settings, Lunar JS, TikTok JS and other files alone.
+5. Start the tool using your existing START-COMICROX-TOOL.bat.
+   Reload the browser with Ctrl+F5. A third SERIES / RUN tab should appear.
+
+QUICK START
+1. Enter the series, volume and issue numbers, for example:
+   Series: Spawn   Volume: 1   Issues: 2, 10, 12, 22, 26
+   Ranges such as 1-20 are also supported, up to 200 issues per batch.
+   Enter a default condition/price if useful, and choose an image default.
+   Click CREATE / UPDATE ISSUE ROWS.
+2. Review each issue. Each row is a SEPARATE listing, normally one copy.
+   Change Copies if you have several copies with the same condition/edition.
+   Issue publication year, creator, printing, variant and defects are optional
+   factual fields. Unknown details stay blank. Titles are checked against 80
+   characters; long titles need review rather than losing the issue identity.
+3. Choose a cover or assign your photos, then confirm the images/edition.
+4. Export ALL products from Shopify, including draft and archived.
+   Extract the CSV if Shopify gives you a ZIP. Load it in Step 3 and tick the
+   ALL-products confirmation. CHECK WHAT IS READY explains any held rows.
+5. DOWNLOAD READY NEW LISTINGS creates a Shopify-ready new-product CSV.
+   Import that CSV in Shopify, then record ALL ROWS IMPORTED only when every
+   row succeeded. For partial success leave the export pending.
+   Do not enable overwriting existing products for this new-listing CSV.
+6. Crosslist through your usual Shopify -> Crosslist -> eBay/Whatnot workflow.
+
+ONLINE COVERS
+FIND ONLINE COVERS uses your existing local eBay API application settings to
+suggest images. It does not select a cover, set condition or create listings.
+Check the precise issue, volume, printing and variant, then choose the cover.
+Use a clean representative image you can use, not a misleading seller photo.
+You may instead paste an approved public HTTPS image URL.
+The image must load and be at least 500 pixels on its longest side.
+The description identifies online covers as stock images of the cover, not
+photos proving the condition of your individual copy. Condition comes from you.
+If API settings or lookup are unavailable, use a pasted cover URL or your photos.
+There are no new paid AI calls in this workflow.
+
+YOUR PHOTOS
+Open "My photos — load, assign and upload" in Step 2.
+LOAD MY RECENT PHOTOS reads the same Comic_Photos folder as Standard Batch.
+Choose up to 12 photos beside each issue. Timestamp filenames can be selected
+manually; several photos still belong to ONE issue listing, not extra copies.
+Optional automatic filenames:
+  Spawn-002-1.jpg
+  Spawn-002-2.jpg
+  Spawn-010-1.jpg
+MATCH ISSUE FILENAMES groups unassigned own-photo rows; review every grouping.
+UPLOAD ASSIGNED PHOTOS TO SHOPIFY FILES sends only those assigned photos to
+Shopify Files when you explicitly confirm. It does not create products.
+If links are still processing, use REFRESH PHOTO LINKS before exporting.
+The photos must load at 500+ pixels on the longest side. Every assigned photo
+needs its Shopify image URL before that issue can be exported.
+
+DUPLICATES, DRAFTS AND HISTORY
+Series / Run has its own browser draft and DOWNLOAD SERIES / RUN BACKUP.
+Standard and Lunar reviews are not replaced. Keep using the same browser/address.
+Stable CR-SR seller SKUs identify issues/editions. Existing Shopify SKUs/handles
+are excluded, and possible existing issue titles are held for manual checking.
+This does not top up existing inventory. Check existing stock separately.
+Pending files prevent accidentally exporting the same issue again before its
+import outcome is known. Download the SAME file from history if needed.
+Changing series/volume requires confirmation and clears only this run's rows.
+Defaults apply to new rows; existing issue edits are retained when adding issues.
+No claims such as first appearances, rare printings or low print runs are
+invented. Enter only selling points you can substantiate.
+
+VALIDATION
+Browser tests cover issue/range parsing, one listing per issue, online image
+confirmation, multiple own-photo images, condition/price/title/image checks,
+existing products, pending exports, reloads and isolated Standard/Lunar state.
+The existing Standard/Lunar/TikTok workflow tests also passed.
+PowerShell parsing and mocked eBay search/filter/token tests passed in PowerShell
+7.4.13. The helper uses Windows PowerShell-compatible syntax. Live eBay lookup,
+photo upload and a Windows installation still need checking on your PC with
+its existing credentials; no live listings or stock were changed here.

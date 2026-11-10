@@ -54,3 +54,6 @@ function comicRoxBindStableEditors(){
   };
  }
 }
+
+// Optional third workflow; existing Standard/Lunar review state is not replaced.
+(()=>{const s=document.createElement('script');s.src='/ComicRox-Series-Run.js';s.onerror=()=>{const p=document.createElement('p');p.className='warn';p.textContent='Series / Run could not load. Copy its JS/helper files and the updated server, then restart the tool.';document.querySelector('.tabbtn')?.parentElement.appendChild(p);};document.body.appendChild(s);})();

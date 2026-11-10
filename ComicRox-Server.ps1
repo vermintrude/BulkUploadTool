@@ -28,6 +28,7 @@ function Read-Body($req){$sr=New-Object IO.StreamReader($req.InputStream,$req.Co
 . (Join-Path $Root 'ComicRox-Usage.ps1')
 . (Join-Path $Root 'ComicRox-Shopify-Flow.ps1')
 . (Join-Path $Root 'ComicRox-Shopify-Products.ps1')
+. (Join-Path $Root 'ComicRox-Series-Run.ps1')
 . (Join-Path $Root 'ComicRox-Price-Checker.ps1')
 
 Remove-Item -LiteralPath $LogFile -ErrorAction SilentlyContinue
@@ -69,6 +70,16 @@ while($listener.IsListening){
     if($path -eq '/ComicRox-Admin.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Admin.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Usage.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Usage.js'))) 'application/javascript; charset=utf-8'; continue }
     if($path -eq '/ComicRox-Price-Checker.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Price-Checker.js'))) 'application/javascript; charset=utf-8'; continue }
+    if($path -eq '/ComicRox-Series-Run.js' -and $ctx.Request.HttpMethod -eq 'GET'){ Send-Bytes $ctx ([IO.File]::ReadAllBytes((Join-Path $Root 'ComicRox-Series-Run.js'))) 'application/javascript; charset=utf-8'; continue }
+    if($path -eq '/api/series-run/covers' -and $ctx.Request.HttpMethod -eq 'POST'){
+      try {
+        $origin=$ctx.Request.Headers['Origin']
+        if($origin -and $origin -ne ('http://localhost:'+$Port)){throw 'Open Series / Run from the local ComicRox tool.'}
+        if($ctx.Request.ContentLength64 -lt 0 -or $ctx.Request.ContentLength64 -gt 2048 -or $ctx.Request.ContentType -notmatch '^application/json'){throw 'Invalid cover search request.'}
+        $body=(Read-Body $ctx.Request)|ConvertFrom-Json
+        Send-Json $ctx (Find-ComicRoxSeriesCovers ([string]$body.series) ([string]$body.issue))
+      } catch { Send-Json $ctx @{ok=$false;error=$_.Exception.Message} 400 }; continue
+    }
     if($path -eq '/api/admin/price-checker' -and $ctx.Request.HttpMethod -eq 'POST'){
       try {
         $origin=$ctx.Request.Headers['Origin']
