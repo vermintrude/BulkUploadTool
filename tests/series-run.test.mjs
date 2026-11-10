@@ -57,7 +57,7 @@ test('own-photo filename grouping, Shopify file upload and multiple CSV image ro
  await page.route('**/api/upload-shopify',route=>{paths=route.request().postDataJSON().paths;return route.fulfill({json:{ok:true,message:'uploaded'}});});
  await page.route('**/api/refresh-shopify',route=>route.fulfill({json:[{Alt:'Spawn-002-1.jpg',URL:'https://cdn.test/a.jpg'},{Alt:'Spawn-002-2.jpg',URL:'https://cdn.test/b.jpg'}]}));
  await page.locator('summary').filter({hasText:'My photos — load'}).click();await page.locator('#srLoadPhotos').click();await page.locator('#srMatchNames').click();await page.waitForFunction(()=>ComicRoxSeriesRunTest.getState().rows[0].photos.every(p=>p.imageSize>=500));
- page.once('dialog',d=>d.accept());await page.locator('#srUploadPhotos').click();assert.equal(paths.length,2);await page.locator('[data-sr-row="issue-2"][data-sr-field="imageConfirmed"]').check();await load(page);await page.waitForFunction(()=>ComicRoxSeriesRunTest.getState().rows[0].photos.every(p=>p.imageSize>=500));
+ page.once('dialog',d=>d.accept());await page.locator('#srUploadPhotos').click();assert.equal(paths.length,2);assert.equal(await page.locator('[data-sr-row="issue-2"][data-sr-field="imageConfirmed"]').count(),0);await load(page);await page.waitForFunction(()=>ComicRoxSeriesRunTest.getState().rows[0].photos.every(p=>p.imageSize>=500));
  const d=page.waitForEvent('download');await page.locator('#srExport').click();const f=await d;const csv=fs.readFileSync(await f.path(),'utf8');const parsed=await page.evaluate(csv=>parseCsv(csv.replace(/^\uFEFF/,'')),csv);assert.equal(parsed.length,3);assert.equal(parsed[2][19],'https://cdn.test/b.jpg');assert.equal(parsed[2][20],'2');assert.equal(parsed[2][1],'');assert.match(csv,/Photos show the actual copy/);assert.doesNotMatch(csv,/Stock cover image/);assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });
@@ -88,7 +88,7 @@ test('laptop browse assigns directly to an issue; reorder/remove controls determ
  await page.locator('button[data-sr-photo-row="issue-2"][data-sr-photo-index="0"][data-sr-photo-action="right"]').click();await page.locator('button[data-sr-photo-row="issue-2"][data-sr-photo-index="2"][data-sr-photo-action="remove"]').click();
  let photos=await page.evaluate(()=>ComicRoxSeriesRunTest.getState().rows[0].photos);assert.deepEqual(photos.map(p=>p.displayName),['b.jpg','a.jpg']);
  page.once('dialog',d=>d.accept());await page.locator('#srUploadUsedPhotos').click();await page.waitForFunction(()=>ComicRoxSeriesRunTest.getState().rows[0].photos.every(p=>p.url&&p.imageSize>=500));assert.deepEqual(uploads[0],['C:/photos/Selected_Imports/b.jpg','C:/photos/Selected_Imports/a.jpg']);
- await page.locator('#srUploadUsedPhotos').click();assert.equal(uploads.length,1);await page.locator('[data-sr-row="issue-2"][data-sr-field="imageConfirmed"]').check();await load(page);
+ await page.locator('#srUploadUsedPhotos').click();assert.equal(uploads.length,1);assert.equal(await page.locator('[data-sr-row="issue-2"][data-sr-field="imageConfirmed"]').count(),0);await load(page);
  const d=page.waitForEvent('download');await page.locator('#srExport').click();const f=await d;const parsed=await page.evaluate(csv=>parseCsv(csv.replace(/^\uFEFF/,'')),fs.readFileSync(await f.path(),'utf8'));assert.equal(parsed[1][19],'https://cdn.test/b.jpg');assert.equal(parsed[2][19],'https://cdn.test/a.jpg');assert.equal(parsed[2][20],'2');assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });
@@ -119,5 +119,11 @@ test('changing duplicate-check mode resets confirmation; skipping ignores a prev
  await page.locator('#srDuplicateModeSkip').check();await page.locator('#srSkipCheckConfirm').check();assert.equal((await page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan())).ready.length,1);
  await page.locator('[data-sr-row="issue-2"][data-sr-field="variant"]').fill('FCBD');assert.equal(await page.locator('#srSkipCheckConfirm').isChecked(),false);
  await page.locator('#srSkipCheckConfirm').check();await page.locator('#srDuplicateModeChecked').check();await page.locator('#srDuplicateModeSkip').check();assert.equal(await page.locator('#srSkipCheckConfirm').isChecked(),false);
+ }finally{await page.close();}
+});
+test('only online covers require edition confirmation; own-photo rows keep image/link validation without that checkbox',async()=>{
+ const {page,errors}=await setup();try{
+ await prepare(page,'2');await images(page);await load(page);await page.locator('[data-sr-row="issue-2"][data-sr-field="imageConfirmed"]').uncheck();let plan=await page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan());assert.match(plan.held[0].reason,/confirm online cover/);
+ await page.locator('[data-sr-row="issue-2"][data-sr-field="imageMode"]').selectOption('own');assert.equal(await page.locator('[data-sr-row="issue-2"][data-sr-field="imageConfirmed"]').count(),0);plan=await page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan());assert(plan.held.length===1);assert.doesNotMatch(plan.held[0].reason,/confirm.*edition/);assert.match(plan.held[0].reason,/photo links/);assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });

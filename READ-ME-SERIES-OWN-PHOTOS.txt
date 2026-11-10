@@ -1,0 +1,19 @@
+SERIES / RUN — OWN PHOTOS NEED NO EXTRA EDITION CHECKBOX
+10 November 2026
+
+Back up your Series / Run draft, keep a spare copy of the current JS file,
+and replace ONLY ComicRox-Series-Run.js in your existing tool folder.
+Reload the browser with Ctrl+F5. No server restart is needed.
+
+The extra "I checked these images..." checkbox now appears only for online
+cover images. It is not required for your own selected/assigned photos.
+This applies to existing saved rows as well as new ones; no re-selection or
+re-upload is needed just to remove the old confirmation requirement.
+
+Own photos still need to load, meet the image-size check and have their public
+Shopify image links before export. Price, condition, title, quantity and chosen
+duplicate-check rules remain in place. Pending files remain protected.
+
+After updating, click CHECK WHAT IS READY and export the remaining ready rows.
+Record the outcome of the previously imported one-product FCBD file separately.
+The optional Shopify-check choice and photo browse/order features are retained.
