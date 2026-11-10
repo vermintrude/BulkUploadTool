@@ -1,0 +1,27 @@
+SERIES / RUN — OPTIONAL SHOPIFY CATALOGUE CHECK — 10 NOVEMBER 2026
+
+INSTALL
+For an existing Series / Run installation with the photo-browsing update:
+1. Download your Series / Run draft backup under Step 1 -> Draft backups.
+2. Keep a spare copy of ComicRox-Series-Run.js from your current tool folder.
+3. Replace ONLY ComicRox-Series-Run.js with this supplied file.
+4. Reload the tool with Ctrl+F5. No server restart or HTML replacement is needed.
+Your issue rows, prices, images and export history remain saved in this browser.
+
+USE THE NEW CHOICE IN STEP 3
+- Check against a Shopify export: existing behaviour, with a fresh ALL-products
+  CSV and the full-catalogue confirmation. This is the default when opening the tool.
+- Skip Shopify export — I know these are new: no catalogue CSV is required.
+  Tick the confirmation that these are new products and you want to proceed
+  without comparing Shopify, then CHECK WHAT IS READY / DOWNLOAD READY NEW LISTINGS.
+
+Skipping means no existing-product SKU, handle or title comparison is performed,
+even if an older catalogue was loaded. The export record says that it was skipped.
+It does not turn off image, title-length, price, condition or quantity checks.
+Local pending exports still hold issues already downloaded but not yet reconciled.
+
+The skip confirmation resets after download, rebuilding the issue list, changing
+series/volume/issue list/printing/variant, switching check modes, or restoring a
+backup. It is not a permanent opt-out for later batches or browser sessions.
+Uploading used photos is independent of this choice and still needs no product CSV.
+Standard Batch, Lunar Batch and TikTok rules are unchanged by this patch.

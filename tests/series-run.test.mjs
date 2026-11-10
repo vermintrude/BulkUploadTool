@@ -101,3 +101,23 @@ test('Standard Batch can browse a directory selection, build before upload and r
  await page.locator('[data-standard-photo-row="0"][data-standard-photo-index="1"][data-standard-photo-action="left"]').click();assert.equal(await page.evaluate(()=>records[0].photos[0].displayName),'a.jpg');assert.equal(await page.evaluate(()=>records[0].shops[0].URL),'https://cdn.test/a.jpg');assert.equal(await page.evaluate(()=>records[0].shop.URL),'https://cdn.test/a.jpg');assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });
+test('Series / Run can explicitly skip the Shopify CSV without skipping listing validation or pending-file protection',async()=>{
+ const {page,errors}=await setup();try{
+ await prepare(page,'2');await images(page);
+ await assert.rejects(page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan()),/fresh Shopify/);
+ await page.locator('#srDuplicateModeSkip').check();assert.equal(await page.locator('#srShopifyCheckInputs').isHidden(),true);await assert.rejects(page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan()),/Confirm these are new/);
+ await page.locator('#srSkipCheckConfirm').check();let plan=await page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan());assert.equal(plan.catalogueChecked,false);assert.equal(plan.ready.length,1);
+ await page.locator('[data-sr-row="issue-2"][data-sr-field="price"]').fill('');plan=await page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan());assert.match(plan.held[0].reason,/enter a price/);await page.locator('[data-sr-row="issue-2"][data-sr-field="price"]').fill('4.75');
+ const d=page.waitForEvent('download');await page.locator('#srExport').click();await d;assert.equal(await page.locator('#srSkipCheckConfirm').isChecked(),false);assert.equal((await page.evaluate(()=>ComicRoxSeriesRunTest.getState())).exports[0].catalogueChecked,false);assert.match(await page.locator('#srExportStatus').textContent(),/check skipped/);
+ await page.locator('#srSkipCheckConfirm').check();plan=await page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan());assert.equal(plan.ready.length,0);assert.match(plan.held[0].reason,/earlier CSV/);
+ await page.reload();await page.waitForFunction(()=>!!window.ComicRoxSeriesRunTest);assert.equal(await page.locator('#srDuplicateModeChecked').isChecked(),true);assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});
+test('changing duplicate-check mode resets confirmation; skipping ignores a previously loaded catalogue by owner choice',async()=>{
+ const {page}=await setup();try{
+ await prepare(page,'2');await images(page);const sku=await page.evaluate(()=>ComicRoxSeriesRunTest.skuFor(ComicRoxSeriesRunTest.getState().rows[0]));await load(page,master([['existing','Spawn #2',sku,'active']]));assert.equal((await page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan())).existing.length,1);
+ await page.locator('#srDuplicateModeSkip').check();await page.locator('#srSkipCheckConfirm').check();assert.equal((await page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan())).ready.length,1);
+ await page.locator('[data-sr-row="issue-2"][data-sr-field="variant"]').fill('FCBD');assert.equal(await page.locator('#srSkipCheckConfirm').isChecked(),false);
+ await page.locator('#srSkipCheckConfirm').check();await page.locator('#srDuplicateModeChecked').check();await page.locator('#srDuplicateModeSkip').check();assert.equal(await page.locator('#srSkipCheckConfirm').isChecked(),false);
+ }finally{await page.close();}
+});
