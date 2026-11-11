@@ -134,3 +134,12 @@ test('Prepare Shopify file uploads only assigned local photos and downloads with
  assert.equal(await page.locator('#srUploadUsedPhotos').isVisible(),false);assert.equal(await page.locator('#srExport').isVisible(),true);page.once('dialog',d=>d.accept());const download=page.waitForEvent('download');await page.locator('#srExport').click();const file=await download;assert.equal(uploads.length,1);assert.match(fs.readFileSync(await file.path(),'utf8'),/https:\/\/cdn.test\/a.jpg/);assert.deepEqual(errors,[]);
  }finally{await page.close();}
 });
+
+test('starting a new batch retains pending export protection and previous draft photos across reload',async()=>{
+ const {page,errors}=await setup();try{
+ await prepare(page,'2');await images(page);await load(page);const download=page.waitForEvent('download');await page.locator('#srExport').click();await download;
+ const before=await page.evaluate(()=>ComicRoxSeriesRunTest.getState());page.once('dialog',d=>d.accept());await page.locator('#srNewBatch').click();
+ let next=await page.evaluate(()=>ComicRoxSeriesRunTest.getState());assert.equal(next.rows.length,0);assert.equal(next.common.series,'');assert.deepEqual(next.exports,before.exports);assert.equal(await page.locator('#srSeries').inputValue(),'');assert.equal(await page.locator('#srPlan').textContent(),'');
+ await page.reload();await page.waitForFunction(()=>!!window.ComicRoxSeriesRunTest);await page.locator('[data-tab="seriesRunPane"]').click();await page.locator('#srPreviousBatch').click();next=await page.evaluate(()=>ComicRoxSeriesRunTest.getState());assert.deepEqual(next.rows,before.rows);assert.deepEqual(next.exports,before.exports);await load(page);const plan=await page.evaluate(()=>ComicRoxSeriesRunTest.exportPlan());assert.equal(plan.ready.length,0);assert.match(plan.held[0].reason,/earlier CSV/);assert.deepEqual(errors,[]);
+ }finally{await page.close();}
+});

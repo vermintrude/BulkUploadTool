@@ -1,0 +1,9 @@
+Series / Run — Start new batch — 11 November 2026
+
+Close the tool tab. Replace ComicRox-Series-Run.js in your EXISTING tool folder with the file in this zip. Reopen the same browser address and press Ctrl+F5. Do not replace your HTML or clear browser storage.
+
+At Step 1, use START NEW BATCH for a fresh series/run. The current draft is retained as the previous draft in this browser. REOPEN PREVIOUS DRAFT brings it back; if another draft is open, the two drafts swap places. Only one previous draft is retained, so download your usual Series / Run backup before cycling through several loads you want to keep.
+
+Import history and pending-file protections remain. New batches require their own catalogue check or explicit skip choice. No Shopify products, stock or source photos are deleted. This patch includes the earlier Prepare Shopify File simplification.
+
+13 Series browser tests passed, including reload, previous-draft recovery and pending-export protection.

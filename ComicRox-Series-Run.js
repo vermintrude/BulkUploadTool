@@ -195,6 +195,34 @@
  const photoTools=document.createElement('div');const photoHeading=$s('srUploadUsedPhotos').previousElementSibling.previousElementSibling;photoHeading.before(photoTools);let photoNode=photoHeading;while(photoNode&&photoNode.id!=='srCheck'){const next=photoNode.nextSibling;photoTools.append(photoNode);photoNode=next;}
  const advanced=document.createElement('details');advanced.innerHTML='<summary>Photo upload and link troubleshooting</summary>';photoTools.before(advanced);advanced.append(photoTools);
  const hint=document.createElement('p');hint.textContent='Next: PREPARE SHOPIFY FILE uploads your assigned laptop photos, checks the books and downloads ready listings. Import that file in Shopify, then record the result below.';$s('srExport').before(hint);
+
+ // Keep the previous draft recoverable when starting another load.
+ const previousDraftKey=key+'_previous_draft';
+ $s('srBuild').insertAdjacentHTML('beforebegin','<button class="btn secondary" id="srNewBatch">START NEW BATCH</button> <button class="btn secondary" id="srPreviousBatch">REOPEN PREVIOUS DRAFT</button> ');
+ function syncDraftControls(){
+  for(const [id,field]of Object.entries(commonFields))$s(id).value=state.common[field]||'';
+  master=null;pool=[];files=[];photoRow=null;resetSkipConfirmation();
+  $s('srMasterComplete').checked=false;$s('srDuplicateModeChecked').checked=true;$s('srDuplicateModeSkip').checked=false;$s('srShopifyCheckInputs').hidden=false;$s('srSkipCheckPanel').hidden=true;$s('srPhotoPicker').hidden=true;
+  for(const id of ['srMasterStatus','srPhotoStatus','srUsedPhotoStatus','srExportStatus','srPlan'])$s(id).textContent='';
+  render();$s('srSeries').focus();
+ }
+ $s('srNewBatch').onclick=()=>action('srStatus',async()=>{
+  if(state.readError)throw Error('Restore your saved draft before starting another batch.');
+  if(state.rows.length&&!confirm('Start a new batch? Your current draft will be saved as the previous draft. Import history and pending-file protections will be kept.'))return;
+  const old=state,next=blank();next.exports=state.exports;
+  if(old.rows.length)localStorage.setItem(previousDraftKey,JSON.stringify(old));
+  state=next;try{save();}catch(e){state=old;throw e;}
+  syncDraftControls();message('srStatus','New batch started. Enter the series and issues above. Your previous draft can be reopened; import history has been retained.');
+ });
+ $s('srPreviousBatch').onclick=()=>action('srStatus',async()=>{
+  const raw=localStorage.getItem(previousDraftKey);if(!raw)throw Error('No previous draft has been saved yet.');
+  const next=validate(JSON.parse(raw)),old=state;
+  if(state.rows.length&&!confirm('Reopen the previous draft? The current draft will take its place so you can switch back.'))return;
+  next.exports=[...new Map([...next.exports,...old.exports].map(x=>[x.id,x])).values()];
+  if(old.rows.length)localStorage.setItem(previousDraftKey,JSON.stringify(old));
+  state=next;try{save();}catch(e){state=old;localStorage.setItem(previousDraftKey,raw);throw e;}
+  syncDraftControls();message('srStatus','Previous draft reopened with import history retained.');
+ });
  render();if(state.readError)message('srStatus','Stored draft could not be read: '+state.readError+'. Restore a checked Series / Run backup.');
  window.ComicRoxSeriesRunTest={parseIssues,makeTitle,makeDescription,exportPlan,loadMaster,identity,skuFor,getState:()=>JSON.parse(JSON.stringify(state)),getMaster:()=>master};
 })();
