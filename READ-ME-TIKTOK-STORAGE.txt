@@ -1,0 +1,20 @@
+ComicRox TikTok storage fix — 11 November 2026
+
+Keep the JSON backup you already downloaded. Do NOT clear browser/site data.
+
+INSTALL
+Close the TikTok tool tab. Replace ONLY ComicRox-TikTok.js in your EXISTING tool folder with the file in this zip. Reopen the same tool address and press Ctrl+F5.
+
+FREE SPACE
+Near the normal TikTok backup controls, click FREE TIKTOK WORKBOOK SPACE. It moves saved upload-workbook contents to the browser's larger IndexedDB storage. All import outcomes, pending rows, SKU mappings and the original workbooks remain available. It does not touch Lunar or Series data.
+The tool also performs this move automatically before actions when old inline workbooks are present.
+
+CONTINUE TODAY'S UPDATE
+Reload your current Shopify and TikTok exports, confirm the status coverage and parcel profiles, Compare exports, then Download additions XLSX. Errors and progress appear beside the additions button.
+Do NOT start an empty/fresh catalogue: your existing TikTok catalogue is populated.
+
+Backups still contain the original workbook contents and can be restored without relying on the old browser database. Download a new normal TikTok Sync backup after the move. Workbook redownloads still work after a page reload.
+
+If settings space is still insufficient, the tool will stop with a clear message rather than download an unrecorded run. Keep the backup and report the message; do not clear site data.
+
+Validation: 8 browser checks passed against the exact shipping file; one optional private-fixture check skipped. Tests cover simulated settings quota, migration failure, workbook redownload, portable backup, generation, duplicate protections and cleanup. No live TikTok or Shopify changes were made.
