@@ -1,0 +1,17 @@
+TikTok export import feedback — 17 November 2026
+
+CAUSE
+The two supplied November 17 workbooks have valid Template sheets but no quantity column. The old importer rejected them as not being all-information exports and placed its error elsewhere on the page.
+
+QUICKEST WAY TO CONTINUE
+Download TikTok exports with stock quantity selected, then import the Live and Failed files under the corresponding source choices. This gives full stock comparison and cleanup capability.
+
+UPDATE
+Close the TikTok tool tab. Replace ONLY ComicRox-TikTok.js in your existing tool folder with this file, reopen the same tool address and press Ctrl+F5. Keep your browser data and existing backups.
+
+Loading, success and failure messages now appear beside the TikTok file picker. Failed selections can be retried with the same filename. A selection adds all its files together only after they validate.
+Exports without quantities can now identify existing listings and prevent duplicate additions. Missing quantities remain unknown, not zero. Price comparison still works. Cleanup download is blocked when its affected Live rows lack a stock column, with an explanation to load an export containing quantities.
+The November 11 storage fix is included. No saved history, source files, live products or stock are cleared or modified.
+
+VALIDATION
+Both supplied workbooks imported in browser tests. Exact update: 12 browser checks passed, one optional private-fixture check skipped. Tests cover error feedback, missing-stock comparison, cleanup, generation, storage migration, portable backup and duplicate protections.
