@@ -1,0 +1,43 @@
+ComicRox automatic Shopify SEO — 18 November 2026
+
+INSTALL
+1. Download your normal saved-work backups and close the tool tab.
+2. Copy the files in this ZIP into your EXISTING tool folder, replacing the matching JS files.
+3. Reopen the same tool address and press Ctrl+F5.
+No HTML, server configuration, credentials or browser storage is replaced. Keep the same browser/address to retain SEO tracking.
+
+NEW LISTINGS: NOTHING EXTRA TO DO
+Standard Batch, Lunar Batch and Series / Run exports now include SEO Title and SEO Description. Use your usual Shopify product import.
+Existing titles, descriptions, handles, SKUs, prices, quantities, variants and image rows are retained. Pending Lunar/Series download history stores the SEO-enriched file, so Download same file returns exactly that file.
+Optional “Search engine wording — automatic unless edited” sections let you override either SEO field. Leave the fields blank for automatic generation. Entered wording is retained; clear a field to return it to automatic generation.
+Source product identification is never truncated through a word. Titles aim at 50–65 characters, including ComicRox where it fits; sparse source details can produce shorter wording, and unusually long essential identities can exceed that target. Descriptions aim at 140–160 when source facts allow; sparse listings stay shorter rather than inventing facts.
+
+EXISTING PRODUCTS
+1. Export a fresh ALL-products Shopify CSV including the SEO fields. Open SHOPIFY SEO in the tool and load it.
+2. Review the proposed changes. Unknown non-empty wording is preserved. Empty fields are filled. Recognised tool-generated wording can refresh as details or release dates change.
+3. Click DOWNLOAD SEO UPDATE PLAN. The separate DOWNLOAD REVIEW CSV is for review only; do NOT import it into Shopify.
+4. Double-click UPDATE-SHOPIFY-SEO.bat in your tool folder. Select the downloaded JSON plan.
+5. The helper reads the live products and displays the ready/skipped changes. Type APPLY to proceed, or press Enter to cancel.
+6. A .results.csv alongside the plan lists confirmed updates and skipped products. Retrying the same fresh plan safely skips fields already matching.
+
+The helper uses your existing local Shopify connection. Shopify must grant the app read_products and write_products. If permission is missing, it reports the error; no new credentials need to be pasted into chat. Keep ComicRox-Shopify-Flow.ps1 and your existing Shopify environment file in their normal locations.
+Only id and seo are sent in productUpdate. Product titles, bodies, stock, status, handles, variants and prices are not included in the mutation. If live SEO, product title, description or release date differs from the preview, that product is skipped. Plans expire after 24 hours; make a fresh plan rather than applying stale source information.
+
+PRE-ORDERS AND RELEASED STOCK
+Future release dates generate pre-order wording and the date, without promising dispatch on that date. When you next generate or backfill SEO after the release date, recognised generated wording refreshes without the pre-order wording. This update does not install an overnight schedule or change your existing Shopify release Flow. Rerun the bulk preview after releases to refresh existing generated SEO.
+
+MANUAL WORDING AND TRACKING
+The tool recognises generated SEO using record metadata and a small separate browser tracking record. Unrecognised non-empty wording is treated as manual and kept. If generation tracking is unavailable/full, existing wording is preserved and new exports still work; future backfills fall back to filling empty fields only.
+Use BACK UP SEO TRACKING before moving browser or tool address, and restore it on the SHOPIFY SEO tab. Keep that backup alongside your usual Lunar/Series backups. Ordinary saved-work backups retain each record’s manual SEO overrides, but the cross-product tracking backup is separate.
+
+WHY EXISTING-PRODUCT UPDATES USE A HELPER
+Shopify documents that included blank CSV fields can clear values, that identifiers/title are required for updates, and that variant-related columns have dependencies. The backfill therefore exports an SEO-only API plan instead of a product overwrite CSV. You review it first, and the helper rechecks live values before an explicit apply.
+Official references checked 18 November 2026:
+https://help.shopify.com/en/manual/products/import-export/using-csv
+https://shopify.dev/docs/api/admin-graphql/2026-07/mutations/productUpdate
+
+VALIDATION
+Browser tests cover the three export workflows, CSV field preservation, image continuation rows, manual overrides, HTML boundaries, normal issues, variants, printings, decimal grades, pre-orders, released stock, missing details, backfill preview and storage fallback. PowerShell checks use mocked Shopify responses and assert that mutation inputs contain only id and seo, with live-edit/stale-plan checks and idempotent retries. No live Shopify changes were made during development.
+
+ROLLBACK
+Restore your previous ComicRox-Resume.js, ComicRox-Lunar-Workflow.js and ComicRox-Series-Run.js copies. Do not clear browser storage. Rolling back the app does not undo SEO already explicitly applied in Shopify.
